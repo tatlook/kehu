@@ -34,5 +34,5 @@ TEST(TreeParser, TreePa) {
         std::unique_ptr<kehu::ast::syntax_node> ast = parse_primeval_ast(tokens);
         std::ofstream of;
         of.open("k.ll");
-        of << ast->generate_pnl_code();
+        of << ast->generate_kehu_code();
 }

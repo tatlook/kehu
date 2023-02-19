@@ -21,7 +21,7 @@
 namespace kehu::ast
 {
 
-std::string primeval_statement_node::generate_pnl_code() const
+std::string primeval_statement_node::generate_kehu_code() const
 {
         std::string code;
         for (const auto &l : this->lex) {
@@ -29,7 +29,7 @@ std::string primeval_statement_node::generate_pnl_code() const
                         code += std::get<std::string>(l);
                 } else if (std::holds_alternative<std::unique_ptr<value_node>>(l)) {
                         code += std::get<std::unique_ptr<value_node>>(l)
-                                        ->generate_pnl_code();
+                                        ->generate_kehu_code();
                 } else {
                         throw std::logic_error(" ");
                 }
@@ -39,46 +39,46 @@ std::string primeval_statement_node::generate_pnl_code() const
         return code;
 }
 
-std::string variable_reference_node::generate_pnl_code() const
+std::string variable_reference_node::generate_kehu_code() const
 {
         return name;
 }
 
-std::string function_call_node::generate_pnl_code() const
+std::string function_call_node::generate_kehu_code() const
 {
         return std::string(); // FIXME
 }
 
-std::string expression_statement_node::generate_pnl_code() const
+std::string expression_statement_node::generate_kehu_code() const
 {
         std::string code;
-        code += expression->generate_pnl_code();
+        code += expression->generate_kehu_code();
         code += '.';
         return code;
 }
 
-std::string block_node::generate_pnl_code() const
+std::string block_node::generate_kehu_code() const
 {
         std::string code;
         code += "@{\n";
         for (const auto &st : statements) {
-                code += st->generate_pnl_code();
+                code += st->generate_kehu_code();
                 code += '\n';
         }
         code += "@}";
         return code;
 }
 
-std::string function_definition_node::generate_pnl_code() const
+std::string function_definition_node::generate_kehu_code() const
 {
         return std::string();
 }
 
-std::string file_node::generate_pnl_code() const
+std::string file_node::generate_kehu_code() const
 {
         std::string code;
         for (const auto &st : global_definitions) {
-                code += st->generate_pnl_code();
+                code += st->generate_kehu_code();
                 code += '\n';
         }
         return code;

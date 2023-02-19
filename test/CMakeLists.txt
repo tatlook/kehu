@@ -36,11 +36,11 @@ target_link_libraries(
 target_include_directories(kehu-test PRIVATE ../include ../lib)
 
 include(CTest)
-add_test(NAME Compiler COMMAND kehu test.pnl m.ll)
+add_test(NAME Compiler COMMAND kehu test.kehu m.ll)
 
-add_custom_target(file-copy ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/test.pnl)
-add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/test.pnl
-        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/test.pnl
-                                        ${CMAKE_CURRENT_BINARY_DIR}/test.pnl
-        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/test.pnl)
+add_custom_target(file-copy ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/test.kehu)
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/test.kehu
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/test.kehu
+                                        ${CMAKE_CURRENT_BINARY_DIR}/test.kehu
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/test.kehu)
 

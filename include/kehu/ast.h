@@ -36,12 +36,12 @@ namespace kehu::ast
 struct syntax_node
 {
         /**
-         * @brief Generates pnl code.
+         * @brief Generates kehu code.
          * The code is not strictly human-readle.
          * 
-         * @return string of a pnl code
+         * @return string of a kehu code
          */
-        virtual std::string generate_pnl_code() const = 0;
+        virtual std::string generate_kehu_code() const = 0;
 };
 
 struct value_node : syntax_node
@@ -51,12 +51,12 @@ struct value_node : syntax_node
 struct variable_reference_node : value_node
 {
         std::string name;
-        std::string generate_pnl_code() const override;
+        std::string generate_kehu_code() const override;
 };
 
 struct function_call_node : value_node
 {
-        std::string generate_pnl_code() const override;
+        std::string generate_kehu_code() const override;
 };
 
 struct statement_node : syntax_node
@@ -66,13 +66,13 @@ struct statement_node : syntax_node
 struct expression_statement_node : statement_node
 {
         std::unique_ptr<value_node> expression;
-        std::string generate_pnl_code() const override;
+        std::string generate_kehu_code() const override;
 };
 
 struct block_node : value_node
 {
         std::vector<std::unique_ptr<statement_node>> statements;
-        std::string generate_pnl_code() const override;
+        std::string generate_kehu_code() const override;
 };
 
 
@@ -80,7 +80,7 @@ struct function_definition_node : syntax_node
 {
         std::vector<std::variant<std::string, std::unique_ptr<variable_reference_node>>> lex;
         std::unique_ptr<block_node> block;
-        std::string generate_pnl_code() const override;
+        std::string generate_kehu_code() const override;
 };
 
 /**
@@ -89,7 +89,7 @@ struct function_definition_node : syntax_node
 struct file_node : syntax_node
 {
         std::vector<std::unique_ptr<syntax_node>> global_definitions;
-        std::string generate_pnl_code() const override;
+        std::string generate_kehu_code() const override;
 };
 
 /**
@@ -102,7 +102,7 @@ struct file_node : syntax_node
 struct primeval_statement_node : statement_node
 {
         std::vector<std::variant<std::string, std::unique_ptr<value_node>>> lex;
-        std::string generate_pnl_code() const override;
+        std::string generate_kehu_code() const override;
 };
 
 /**

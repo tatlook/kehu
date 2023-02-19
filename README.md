@@ -7,13 +7,13 @@ Kehu is a toe language. Here is a compiler for this language. The compiler is LL
 
 ## Hello World
 
-A hello world demo in PNL looks like:   (helloworld.pnl)
+A hello world demo in kehu looks like:   (helloworld.kehu)
 ```
 @define main $args @{
     print "Hello, World" to $stdout.
 @}.
 ```
-Use <code>kehu helloworld.pnl</code> to compile this program. This will create a <code>a.out</code> executable file.
+Use <code>kehu helloworld.kehu</code> to compile this program. This will create a <code>a.out</code> executable file.
 
 ## Building & Installing
 

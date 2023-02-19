@@ -90,7 +90,7 @@ int main(int argc, char const *argv[])
                                 << (string) *t << std::endl;
                 }
         }
-        target << ast->generate_pnl_code();
+        target << ast->generate_kehu_code();
         target.close();
 
         return 0;
