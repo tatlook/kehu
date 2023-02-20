@@ -46,15 +46,23 @@ static bool is_identifier_char(char c)
         return true;
 }
 
+static void skip_comment_if_have(std::string::const_iterator &c,
+                const std::string::const_iterator &end)
+{
+        if (*c == '#')
+                c = end;
+}
+
 static Token read_identifier(std::string::const_iterator &c, 
                 const std::string::const_iterator &end)
 {
         if (is_identifier_char(*c)) {
                 std::string value;
-                for ( ; c != end && is_identifier_char(*c); ++c) {
+                while (c != end && is_identifier_char(*c)) {
                         value += *c;
+                        ++c;
+                        skip_comment_if_have(c, end);
                 }
-                --c;
                 Token token = {};
                 token.type = TOKEN_IDENTIFIER;
                 token.value = value;
@@ -66,39 +74,13 @@ static Token read_identifier(std::string::const_iterator &c,
 static Token read_number(std::string::const_iterator &c, 
                 const std::string::const_iterator &end)
 {
-        // int base = 10;
-        // if (std::isdigit(*c)) {
-        //     /* '0x', '0b', '0o' */
-        //     if (*c == '0') {
-        //         ++c;
-        //         switch (*c) {
-        //             case 'o':
-        //                 base = 8;
-        //                 break;
-        //             case 'x':
-        //                 base = 6;
-        //                 break;
-        //             case 'b':
-        //                 base = 2;
-        //                 break;
-        //             default:
-        //                 --c;
-        //         }
-        //         ++c;
-        //     }
-        //     std::string value;
-        //     for ( ; is_identifier_char(*c); ++c) {
-        //         value += *c;
-        //     }
-        //     --c;
-        //     
-        // }
         if (std::isdigit(*c)) {
                 std::string value;
-                for ( ; c != end && is_identifier_char(*c); ++c) {
+                while (c != end && is_identifier_char(*c)) {
                         value += *c;
+                        ++c;
+                        skip_comment_if_have(c, end);
                 }
-                --c;
                 long number = std::stol(value, nullptr, 0);
                 Token token = {};
                 token.type = TOKEN_INTEGER;
@@ -115,9 +97,50 @@ static Token read_symbol(std::string::const_iterator &c,
                 Token token = {};
                 token.type = TOKEN_SYMBOL;
                 token.value = *c;
+                ++c;
                 return token;
         }
         return read_number(c, end);
+}
+
+static Token read_string(std::string::const_iterator &c, 
+                const std::string::const_iterator &end)
+{
+        if (*c == '"') {
+                ++c;
+                std::string value;
+                while (true) {
+                        if (c == end)
+                                throw token_exception("");
+                        if (*c == '"')
+                                break;
+                        if (*c == '\\') {
+                                ++c;
+                                if (c == end)
+                                        throw token_exception("");
+                                switch (*c) {
+                                case 'n':
+                                        value += '\n';
+                                case 't':
+                                        value += '\t';
+                                case '\\':
+                                        value += '\\';
+                                case '"':
+                                        value += '"';
+                                default:
+                                        throw token_exception("");
+                                }
+                        } else {
+                                value += *c;
+                        }
+                        ++c;
+                }
+                Token token = {};
+                token.type = TOKEN_STRING;
+                token.value = value;
+                return token;
+        }
+        return read_symbol(c, end);
 }
 
 class string_eof {
@@ -130,18 +153,9 @@ static Token read_token_after_spaces(std::string::const_iterator &c,
                 if (c == end)
                         throw string_eof();
                 if ( ! std::isspace(*c))
-                        return read_symbol(c, end);
+                        return read_string(c, end);
                 ++c;
         }
-}
-
-static std::string take_down_comments(const std::string &s)
-{
-        int index = s.find_first_of('#');
-        /* if we have not '#' in the std::string */
-        if (index == s.npos)
-                return s;
-        return s.substr(0, index);
 }
 
 /**
@@ -150,7 +164,7 @@ static std::string take_down_comments(const std::string &s)
 static std::vector<Token> tokenize_line(int linec, const std::string &line)
 {
         std::vector<Token> line_tokens;
-        for (std::string::const_iterator c = line.begin(); c != line.end(); ++c) {
+        for (std::string::const_iterator c = line.begin(); c != line.end(); ) {
                 try {
                         Token token = read_token_after_spaces(c, line.end());
                         token.linec = linec;
@@ -167,8 +181,7 @@ const std::vector<Token> &tokenize(const std::vector<std::string> &original_line
         int linec = 1;
         std::vector<Token> *tokens = new std::vector<Token>();
         for (const std::string &original_line : original_lines) {
-                const std::string &uncommented_line = take_down_comments(original_line);
-                const std::vector<Token> &line_tokens = tokenize_line(linec, uncommented_line);
+                const std::vector<Token> &line_tokens = tokenize_line(linec, original_line);
                 tokens->insert(tokens->end(), line_tokens.begin(), line_tokens.end());
                 linec++;
         }

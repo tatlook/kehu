@@ -25,12 +25,6 @@ using namespace kehu::token;
 using std::string;
 using std::vector;
 
-TEST(TokenizerTest, TakingDownComments)
-{
-        string line = "saatana vittu 88#voi perse";
-        ASSERT_EQ(take_down_comments(line), "saatana vittu 88");
-}
-
 TEST(TokenizerTest, ReadSymbol)
 {
         string s = "(.v g";
@@ -66,6 +60,19 @@ TEST(TokenizerTest, ReadNumber)
         token = read_number(c, s.end());
         ASSERT_EQ(token.type, TOKEN_INTEGER);
         ASSERT_EQ(std::get<signed long>(token.value), 0b1000101);
+}
+
+TEST(TokenizerTest, ReadString)
+{
+        string s = "\"vo\"";
+        string::const_iterator c = s.begin();
+        try {
+                Token token = read_string(c, s.end());
+                ASSERT_EQ(token.type, TOKEN_STRING);
+                ASSERT_EQ(std::get<std::string>(token.value), "voi*\\\"*\\n \\t#");
+        } catch (token_exception &e) {
+                FAIL();
+        }
 }
 
 TEST(TokenizerTest, LineTokens)
