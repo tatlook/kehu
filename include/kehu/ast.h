@@ -54,6 +54,12 @@ struct variable_reference_node : value_node
         std::string generate_kehu_code() const override;
 };
 
+struct word_node : value_node
+{
+        std::string word;
+        std::string generate_kehu_code() const override;
+};
+
 struct function_call_node : value_node
 {
         std::string generate_kehu_code() const override;

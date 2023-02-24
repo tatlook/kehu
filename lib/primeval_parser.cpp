@@ -41,66 +41,39 @@ static bool is_variable(const Token &t)
         return false;
 }
 
-// static void require_period(vector<Token>::const_iterator &t,
-//                 const vector<Token>::const_iterator &end)
-// {
-//         if (t == end)
-//                 throw syntax_error("unexpected ending", t[-1]);
-//         if (*t != '.')
-//                 throw syntax_error("expected '.', not " + (string) *t);
-//         ++t;
-// }
-
-static std::unique_ptr<variable_reference_node> read_variable(vector<Token>::const_iterator &t,
+static std::unique_ptr<value_node> read_word(vector<Token>::const_iterator &t,
                 const vector<Token>::const_iterator &end)
 {
-        assert(is_variable(*t));
+        if (t->type != TOKEN_IDENTIFIER)
+                throw syntax_error("wow");
+        auto word = std::make_unique<word_node>();
+        word->word = std::get<string>(t->value);
+        ++t;
+        return word;
+}
+
+static std::unique_ptr<value_node> read_variable(vector<Token>::const_iterator &t,
+                const vector<Token>::const_iterator &end)
+{
+        if ( ! is_variable(*t))
+                return read_word(t, end);
         auto var = std::make_unique<variable_reference_node>();
         var->name = std::get<string>(t->value);
         return var;
 }
 
-static std::unique_ptr<block_node> read_block(vector<Token>::const_iterator &t,
-                const vector<Token>::const_iterator &end);
-
 static std::unique_ptr<primeval_statement_node> read_primeval_statement(
                 vector<Token>::const_iterator &t,
-                const vector<Token>::const_iterator &end)
-{
-        auto primeval = std::make_unique<primeval_statement_node>();
-        while (true) {
-                if (t == end)
-                        throw syntax_error("unexpected ending", t[-1]);
-                if (*t == '.')
-                        break;
-                if (*t == "{@") {
-                        auto block_node = read_block(t, end);
-                        primeval->lex.push_back(std::move(block_node));
-                        continue;
-                }
-                if (is_variable(*t)) {
-                        auto variable = read_variable(t, end);
-                        primeval->lex.push_back(std::move(variable));
-                        continue;
-                }
-                if (t->type == TOKEN_IDENTIFIER) {
-                        std::string s = std::get<std::string>(t->value);
-                        primeval->lex.push_back(s);
-                        continue;
-                }
-                ++t;
-        }
-        ++t;
-        return primeval;
-}
+                const vector<Token>::const_iterator &end);
 
-static std::unique_ptr<block_node> read_block(vector<Token>::const_iterator &t,
+static std::unique_ptr<value_node> read_block(vector<Token>::const_iterator &t,
                 const vector<Token>::const_iterator &end)
 {
-        assert(*t == "@{");
+        if (*t != "@{") 
+                return read_variable(t, end);
+        ++t;
         auto block = std::make_unique<block_node>();
         while (true) {
-                ++t;
                 if (t == end)
                         throw syntax_error("unexpected ending", t[-1]);
                 if (*t == '.')
@@ -114,36 +87,22 @@ static std::unique_ptr<block_node> read_block(vector<Token>::const_iterator &t,
         return block;
 }
 
-// static std::unique_ptr<function_definition_node> read_function(vector<Token>::const_iterator &t,
-//                 const vector<Token>::const_iterator &end)
-// {
-//         if ( ! (t->type == TOKEN_IDENTIFIER 
-//                         && std::get<string>(t->value) == "@define")) {
-//                 throw syntax_error("only function definitions are alowed", *t);
-//         }
-//         ++t;
-//         auto function = std::make_unique<function_definition_node>();
-//         //vector<std::variant<string, std::unique_ptr<variable_reference_node>>> lex;
-//         for ( ;; ++t) {
-//                 if (t == end)
-//                         throw syntax_error("unexpected ending", t[-1]);
-//                 if (*t == '.')
-//                         throw syntax_error("vv");
-//                 if (*t == "@{") {
-//                         break;
-//                 }
-//                 if (is_variable(*t)) {
-//                         auto var = read_variable(t, end);
-//                         function->lex.push_back(std::move(var));
-//                 } else if (t->type == TOKEN_IDENTIFIER) {
-//                         function->lex.push_back(std::get<string>(t->value));
-//                 }
-//         }
-//         if (function->lex.empty())
-//                 throw syntax_error("bb");
-//         function->block = std::move(read_block(t, end));
-//         return function;
-// }
+static std::unique_ptr<primeval_statement_node> read_primeval_statement(
+                vector<Token>::const_iterator &t,
+                const vector<Token>::const_iterator &end)
+{
+        auto primeval = std::make_unique<primeval_statement_node>();
+        while (true) {
+                if (t == end)
+                        throw syntax_error("unexpected ending", t[-1]);
+                if (*t == '.')
+                        break;
+                auto value_node = read_block(t, end);
+                primeval->lex.push_back(std::move(value_node));
+        }
+        ++t;
+        return primeval;
+}
 
 static std::unique_ptr<syntax_node> read_compile_unit(vector<Token>::const_iterator &t,
                 const vector<Token>::const_iterator &end)

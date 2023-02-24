@@ -49,6 +49,11 @@ std::string function_call_node::generate_kehu_code() const
         return std::string(); // FIXME
 }
 
+std::string word_node::generate_kehu_code() const
+{
+        return word;
+}
+
 std::string expression_statement_node::generate_kehu_code() const
 {
         std::string code;

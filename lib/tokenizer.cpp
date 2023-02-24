@@ -56,91 +56,88 @@ static void skip_comment_if_have(std::string::const_iterator &c,
 static Token read_identifier(std::string::const_iterator &c, 
                 const std::string::const_iterator &end)
 {
-        if (is_identifier_char(*c)) {
-                std::string value;
-                while (c != end && is_identifier_char(*c)) {
-                        value += *c;
-                        ++c;
-                        skip_comment_if_have(c, end);
-                }
-                Token token = {};
-                token.type = TOKEN_IDENTIFIER;
-                token.value = value;
-                return token;
+        if ( ! is_identifier_char(*c))
+                throw token_exception("Unknown token/char");
+        std::string value;
+        while (c != end && is_identifier_char(*c)) {
+                value += *c;
+                ++c;
+                skip_comment_if_have(c, end);
         }
-        throw token_exception("Unknown token/char");
+        Token token = {};
+        token.type = TOKEN_IDENTIFIER;
+        token.value = value;
+        return token;
 }
 
 static Token read_number(std::string::const_iterator &c, 
                 const std::string::const_iterator &end)
 {
-        if (std::isdigit(*c)) {
-                std::string value;
-                while (c != end && is_identifier_char(*c)) {
-                        value += *c;
-                        ++c;
-                        skip_comment_if_have(c, end);
-                }
-                long number = std::stol(value, nullptr, 0);
-                Token token = {};
-                token.type = TOKEN_INTEGER;
-                token.value = number;
-                return token;
+        if ( ! std::isdigit(*c))
+                return read_identifier(c, end);
+        std::string value;
+        while (c != end && is_identifier_char(*c)) {
+                value += *c;
+                ++c;
+                skip_comment_if_have(c, end);
         }
-        return read_identifier(c, end);
+        long number = std::stol(value, nullptr, 0);
+        Token token = {};
+        token.type = TOKEN_INTEGER;
+        token.value = number;
+        return token;
 }
 
 static Token read_symbol(std::string::const_iterator &c, 
                 const std::string::const_iterator &end)
 {
-        if (is_symbol(*c)) {
-                Token token = {};
-                token.type = TOKEN_SYMBOL;
-                token.value = *c;
-                ++c;
-                return token;
-        }
-        return read_number(c, end);
+        if ( ! is_symbol(*c))
+                return read_number(c, end);
+        Token token = {};
+        token.type = TOKEN_SYMBOL;
+        token.value = *c;
+        ++c;
+        return token;
 }
 
 static Token read_string(std::string::const_iterator &c, 
                 const std::string::const_iterator &end)
 {
-        if (*c == '"') {
-                ++c;
-                std::string value;
-                while (true) {
+        if (*c != '"') 
+                return read_symbol(c, end);
+        
+        ++c;
+        std::string value;
+        while (true) {
+                if (c == end)
+                        throw token_exception("");
+                if (*c == '"')
+                        break;
+                if (*c == '\\') {
+                        ++c;
                         if (c == end)
                                 throw token_exception("");
-                        if (*c == '"')
-                                break;
-                        if (*c == '\\') {
-                                ++c;
-                                if (c == end)
-                                        throw token_exception("");
-                                switch (*c) {
-                                case 'n':
-                                        value += '\n';
-                                case 't':
-                                        value += '\t';
-                                case '\\':
-                                        value += '\\';
-                                case '"':
-                                        value += '"';
-                                default:
-                                        throw token_exception("");
-                                }
-                        } else {
-                                value += *c;
+                        switch (*c) {
+                        case 'n':
+                                value += '\n';
+                        case 't':
+                                value += '\t';
+                        case '\\':
+                                value += '\\';
+                        case '"':
+                                value += '"';
+                        default:
+                                throw token_exception("");
                         }
-                        ++c;
+                } else {
+                        value += *c;
                 }
-                Token token = {};
-                token.type = TOKEN_STRING;
-                token.value = value;
-                return token;
+                ++c;
         }
-        return read_symbol(c, end);
+        Token token = {};
+        token.type = TOKEN_STRING;
+        token.value = value;
+        return token;
 }
 
 class string_eof {
