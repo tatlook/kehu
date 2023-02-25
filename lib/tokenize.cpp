@@ -134,6 +134,7 @@ static Token read_string(std::string::const_iterator &c,
                 }
                 ++c;
         }
+        ++c;
         Token token = {};
         token.type = TOKEN_STRING;
         token.value = value;

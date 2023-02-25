@@ -17,9 +17,9 @@
 add_library(
         kehu-lib
         token.cpp
-        tokenizer.cpp
+        tokenize.cpp
         ast.cpp
-        primeval_parser.cpp
+        parse_tiled.cpp
 )
 
 target_include_directories(kehu-lib PRIVATE ../include)
