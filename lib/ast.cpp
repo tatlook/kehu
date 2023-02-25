@@ -21,7 +21,7 @@
 namespace kehu::ast
 {
 
-std::string primeval_statement_node::generate_kehu_code() const
+std::string tiled_statement_node::generate_kehu_code() const
 {
         std::string code;
         for (const auto &l : this->lex) {

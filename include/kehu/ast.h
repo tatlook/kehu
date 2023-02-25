@@ -105,7 +105,7 @@ struct file_node : syntax_node
  * int saatana
  * </pre>
  */
-struct primeval_statement_node : statement_node
+struct tiled_statement_node : statement_node
 {
         std::vector<std::variant<std::string, std::unique_ptr<value_node>>> lex;
         std::string generate_kehu_code() const override;

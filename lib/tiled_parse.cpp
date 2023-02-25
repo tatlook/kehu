@@ -62,7 +62,7 @@ static std::unique_ptr<value_node> read_variable(vector<Token>::const_iterator &
         return var;
 }
 
-static std::unique_ptr<primeval_statement_node> read_primeval_statement(
+static std::unique_ptr<tiled_statement_node> read_tiled_statement(
                 vector<Token>::const_iterator &t,
                 const vector<Token>::const_iterator &end);
 
@@ -81,17 +81,17 @@ static std::unique_ptr<value_node> read_block(vector<Token>::const_iterator &t,
                 if (*t == "@}") {
                         break;
                 }
-                block->statements.push_back(read_primeval_statement(t, end));
+                block->statements.push_back(read_tiled_statement(t, end));
         }
         ++t;
         return block;
 }
 
-static std::unique_ptr<primeval_statement_node> read_primeval_statement(
+static std::unique_ptr<tiled_statement_node> read_tiled_statement(
                 vector<Token>::const_iterator &t,
                 const vector<Token>::const_iterator &end)
 {
-        auto primeval = std::make_unique<primeval_statement_node>();
+        auto primeval = std::make_unique<tiled_statement_node>();
         while (true) {
                 if (t == end)
                         throw syntax_error("unexpected ending", t[-1]);
@@ -109,7 +109,7 @@ static std::unique_ptr<syntax_node> read_compile_unit(vector<Token>::const_itera
 {
         auto file = std::make_unique<file_node>();
         while (t != end) {
-                file->global_definitions.push_back(read_primeval_statement(t, end));
+                file->global_definitions.push_back(read_tiled_statement(t, end));
         }
         return file;
 }
