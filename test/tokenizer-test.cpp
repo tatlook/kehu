@@ -18,7 +18,7 @@
 
 #include <gtest/gtest.h>
 
-#include <tokenizer.cpp>
+#include <tokenize.cpp>
 #include <token.cpp>
 
 using namespace kehu::token;

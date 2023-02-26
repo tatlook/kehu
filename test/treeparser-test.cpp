@@ -18,7 +18,7 @@
 
 #include <gtest/gtest.h>
 #include <fstream>
-#include <primeval_parser.cpp>
+#include <tiled_parse.cpp>
 
 using namespace kehu::ast;
 using namespace kehu::token;
