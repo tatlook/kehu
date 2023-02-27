@@ -100,12 +100,50 @@ static Token read_symbol(std::string::const_iterator &c,
         return token;
 }
 
+static char read_char_section(std::string::const_iterator &c, 
+                const std::string::const_iterator &end)
+{
+        if (*c != '\\') {
+                ++c;
+                return c[-1];
+        }
+        c += 2;
+        if (c >= end)
+                throw token_exception("unexpected eof");
+        switch (c[-1]) {
+        case 'n':
+                return '\n';
+        case 't':
+                return '\t';
+        case '\\':
+                return '\\';
+        case '"':
+                return '"';
+        default:
+                throw token_exception("");
+        }
+}
+
+static Token read_char(std::string::const_iterator &c, 
+                const std::string::const_iterator &end)
+{
+        if (*c != '\'') 
+                return read_symbol(c, end);
+        ++c;
+        Token token = {};
+        token.type = TOKEN_CHAR;
+        token.value = read_char_section(c, end);
+        if (*c != '\'')
+                throw token_exception("expected '");
+        ++c;
+        return token;
+}
+
 static Token read_string(std::string::const_iterator &c, 
                 const std::string::const_iterator &end)
 {
         if (*c != '"') 
-                return read_symbol(c, end);
-        
+                return read_char(c, end);
         ++c;
         std::string value;
         while (true) {
@@ -113,26 +151,7 @@ static Token read_string(std::string::const_iterator &c,
                         throw token_exception("");
                 if (*c == '"')
                         break;
-                if (*c == '\\') {
-                        ++c;
-                        if (c == end)
-                                throw token_exception("");
-                        switch (*c) {
-                        case 'n':
-                                value += '\n';
-                        case 't':
-                                value += '\t';
-                        case '\\':
-                                value += '\\';
-                        case '"':
-                                value += '"';
-                        default:
-                                throw token_exception("");
-                        }
-                } else {
-                        value += *c;
-                }
-                ++c;
+                value += read_char_section(c, end);
         }
         ++c;
         Token token = {};

@@ -62,6 +62,36 @@ TEST(TokenizerTest, ReadNumber)
         ASSERT_EQ(std::get<signed long>(token.value), 0b1000101);
 }
 
+TEST(TokenizerTest, ReadCharSection)
+{
+        string s = "\\n";
+        string::const_iterator c = s.begin();
+        char chr = read_char_section(c, s.end());
+        ASSERT_EQ(chr, '\n');
+        ASSERT_EQ(c, s.end());
+        s = "n";
+        c = s.begin();
+        chr = read_char_section(c, s.end());
+        ASSERT_EQ(chr, 'n');
+        ASSERT_EQ(c, s.end());
+}
+
+TEST(TokenizerTest, ReadChar)
+{
+        string s = "'\\n'";
+        string::const_iterator c = s.begin();
+        Token token = read_char(c, s.end());
+        ASSERT_EQ(token.type, TOKEN_CHAR);
+        ASSERT_EQ(std::get<char>(token.value), '\n');   
+        ASSERT_EQ(c, s.end());
+        s = "'n'";
+        c = s.begin();
+        token = read_char(c, s.end());
+        ASSERT_EQ(token.type, TOKEN_CHAR);
+        ASSERT_EQ(std::get<char>(token.value), 'n');   
+        ASSERT_EQ(c, s.end());
+}
+
 TEST(TokenizerTest, ReadString)
 {
         string s = "\"vo\"";

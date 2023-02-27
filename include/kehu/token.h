@@ -33,6 +33,7 @@ enum token_type
         TOKEN_SYMBOL,
         TOKEN_INTEGER,
         TOKEN_STRING,
+        TOKEN_CHAR,
 };
 
 
