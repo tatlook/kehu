@@ -25,14 +25,7 @@ std::string tiled_statement_node::generate_kehu_code() const
 {
         std::string code;
         for (const auto &l : this->lex) {
-                if (std::holds_alternative<std::string>(l)) {
-                        code += std::get<std::string>(l);
-                } else if (std::holds_alternative<std::unique_ptr<value_node>>(l)) {
-                        code += std::get<std::unique_ptr<value_node>>(l)
-                                        ->generate_kehu_code();
-                } else {
-                        throw std::logic_error(" ");
-                }
+                code += l->generate_kehu_code();
                 code += ' ';
         }
         code += '.';

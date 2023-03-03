@@ -84,7 +84,7 @@ struct block_node : value_node
 
 struct function_definition_node : syntax_node
 {
-        std::vector<std::variant<std::string, std::unique_ptr<variable_reference_node>>> lex;
+        std::vector<std::unique_ptr<variable_reference_node>> lex;
         std::unique_ptr<block_node> block;
         std::string generate_kehu_code() const override;
 };
@@ -107,7 +107,7 @@ struct file_node : syntax_node
  */
 struct tiled_statement_node : statement_node
 {
-        std::vector<std::variant<std::string, std::unique_ptr<value_node>>> lex;
+        std::vector<std::unique_ptr<value_node>> lex;
         std::string generate_kehu_code() const override;
 };
 
