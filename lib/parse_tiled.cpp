@@ -41,11 +41,44 @@ static bool is_variable(const Token &t)
         return false;
 }
 
+static std::unique_ptr<value_node> read_raw_char(vector<Token>::const_iterator &t,
+                const vector<Token>::const_iterator &end)
+{
+        if (t->type != TOKEN_CHAR)
+                throw syntax_error("incomprehensible token", *t);
+        auto rawvalue = std::make_unique<raw_char_value_node>();
+        rawvalue->value = std::get<char>(t->value);
+        ++t;
+        return rawvalue;
+}
+
+static std::unique_ptr<value_node> read_raw_string(vector<Token>::const_iterator &t,
+                const vector<Token>::const_iterator &end)
+{
+        if (t->type != TOKEN_STRING)
+                throw read_raw_char(t, end);
+        auto rawvalue = std::make_unique<raw_string_value_node>();
+        rawvalue->value = std::get<std::string>(t->value);
+        ++t;
+        return rawvalue;
+}
+
+static std::unique_ptr<value_node> read_raw_integer(vector<Token>::const_iterator &t,
+                const vector<Token>::const_iterator &end)
+{
+        if (t->type != TOKEN_INTEGER)
+                return read_raw_string(t, end);
+        auto rawvalue = std::make_unique<raw_integer_value_node>();
+        rawvalue->value = std::get<signed long>(t->value);
+        ++t;
+        return rawvalue;
+}
+
 static std::unique_ptr<value_node> read_word(vector<Token>::const_iterator &t,
                 const vector<Token>::const_iterator &end)
 {
         if (t->type != TOKEN_IDENTIFIER)
-                throw syntax_error("wow");
+                return read_raw_integer(t, end);
         auto word = std::make_unique<word_node>();
         word->word = std::get<string>(t->value);
         ++t;
@@ -59,6 +92,7 @@ static std::unique_ptr<value_node> read_variable(vector<Token>::const_iterator &
                 return read_word(t, end);
         auto var = std::make_unique<variable_reference_node>();
         var->name = std::get<string>(t->value);
+        ++t;
         return var;
 }
 
@@ -78,9 +112,8 @@ static std::unique_ptr<value_node> read_block(vector<Token>::const_iterator &t,
                         throw syntax_error("unexpected ending", t[-1]);
                 if (*t == '.')
                         continue;
-                if (*t == "@}") {
+                if (*t == "@}")
                         break;
-                }
                 block->statements.push_back(read_tiled_statement(t, end));
         }
         ++t;
