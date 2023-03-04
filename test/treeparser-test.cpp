@@ -18,19 +18,59 @@
 
 #include <gtest/gtest.h>
 #include <fstream>
-#include <tiled_parse.cpp>
+#include <parse_tiled.cpp>
+#include <typeinfo>
 
 using namespace kehu::ast;
 using namespace kehu::token;
 
-static vector<Token> make_tokens() {
-        return tokenize({
-                "@d v $2 k @{ @}."
+TEST(ParseTiled, ReadRawString)
+{
+        const vector<Token> tokens = tokenize({
+                "\"yes\""
         });
+        auto t = tokens.begin();
+        auto ast = read_raw_string(t, tokens.end());
+        ASSERT_EQ(typeid(*ast), typeid(raw_string_value_node));
+        raw_string_value_node *string = static_cast<raw_string_value_node *>(ast.release());
+        ASSERT_EQ(string->value, "yes");
 }
 
-TEST(TreeParser, TreePa) {
-        vector<Token> tokens = make_tokens();
+TEST(ParseTiled, ReadStatment)
+{
+        const vector<Token> tokens = tokenize({
+                "yes $ze."
+        });
+        auto t = tokens.begin();
+        auto statement = read_tiled_statement(t, tokens.end());
+        ASSERT_EQ(statement->lex.size(), 2);
+        ASSERT_EQ(typeid(*(statement->lex[0])), typeid(word_node));
+        ASSERT_EQ(typeid(*(statement->lex[1])), typeid(variable_reference_node));
+}
+
+TEST(ParseTiled, ReadBlock)
+{
+        const vector<Token> tokens = tokenize({
+                "@{ yes. @}."
+        });
+        auto t = tokens.begin();
+        auto ast = read_block(t, tokens.end());
+        ASSERT_EQ(typeid(*ast), typeid(block_node));
+        block_node *block = static_cast<block_node *>(ast.release());
+        ASSERT_EQ(block->statements.size(), 1);
+        const vector<Token> statement_tokens = tokenize({
+                "yes."
+        });
+        t = statement_tokens.begin();
+        auto statement = read_tiled_statement(t, tokens.end());
+        ASSERT_EQ(*block->statements[0], *statement);
+}
+
+TEST(ParseTiled, TreePa)
+{
+        vector<Token> tokens = tokenize({
+                "@d v $2 k @{ @}."
+        });
         std::unique_ptr<kehu::ast::syntax_node> ast = parse_primeval_ast(tokens);
         std::ofstream of;
         of.open("k.ll");
