@@ -138,17 +138,17 @@ std::unique_ptr<syntax_node> parse_primeval_ast(const std::vector<token::Token> 
 
 class syntax_error : public std::runtime_error
 {
-        const token::Token *error_token;
+        const token::Token error_token;
 public:
         explicit syntax_error(const std::string &message)
-                        : std::runtime_error(message), error_token(nullptr)
+                        : std::runtime_error(message), error_token({.linec = 0})
         {}
 
         explicit syntax_error(const std::string &message, token::Token t) 
-                        : std::runtime_error(message), error_token(&t)
+                        : std::runtime_error(message), error_token(t)
         {}
 
-        const token::Token *get_error_token() const noexcept
+        const token::Token &get_error_token() const noexcept
         {
                 return error_token;
         }

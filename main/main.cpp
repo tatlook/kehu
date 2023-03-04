@@ -73,22 +73,23 @@ int main(int argc, char const *argv[])
                 return errno;
         }
         for (const token::Token &t : tokens) {
-                target << (string) t << std::endl;
+                target << (string) t << " " << t.linec << std::endl;
         }
 
         std::unique_ptr<ast::syntax_node> ast;
         try {
                 ast.reset(ast::parse_primeval_ast(tokens).release());
         } catch (ast::syntax_error &e) {
-                auto *t = e.get_error_token();
-                if (t != nullptr) {
-                        std::cerr << std::to_string(t->linec) << ": ";
+                token::Token t = e.get_error_token();
+                if (t.linec != 0) {
+                        std::cerr << std::to_string(t.linec) << ": ";
                 }
                 std::cerr << e.what();
-                if (t != nullptr) {
-                        std::cerr << std::endl << "\t" << std::to_string((int) t->type)
-                                << (string) *t << std::endl;
+                if (t.linec != 0) {
+                        std::cerr << std::endl << "\t" << std::to_string((int) t.type)
+                                << (string) t << std::endl;
                 }
+                return 1;
         }
         target << ast->generate_kehu_code();
         target.close();
