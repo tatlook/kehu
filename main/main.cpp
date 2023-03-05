@@ -73,7 +73,7 @@ int main(int argc, char const *argv[])
                 return errno;
         }
         for (const token::Token &t : tokens) {
-                target << (string) t << " " << t.linec << std::endl;
+                target << t << " " << t.linec << std::endl;
         }
 
         std::unique_ptr<ast::syntax_node> ast;
@@ -82,12 +82,12 @@ int main(int argc, char const *argv[])
         } catch (ast::syntax_error &e) {
                 token::Token t = e.get_error_token();
                 if (t.linec != 0) {
-                        std::cerr << std::to_string(t.linec) << ": ";
+                        std::cerr << t.linec << ": ";
                 }
                 std::cerr << e.what();
                 if (t.linec != 0) {
-                        std::cerr << std::endl << "\t" << std::to_string((int) t.type)
-                                << (string) t << std::endl;
+                        std::cerr << std::endl << "\t" << (int) t.type
+                                << t << std::endl;
                 }
                 return 1;
         }

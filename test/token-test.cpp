@@ -51,36 +51,36 @@ TEST(Token, ToString)
                 .type = TOKEN_INTEGER,
                 .value = '"',
         };
-        ASSERT_THROW(t.operator std::string(),
+        ASSERT_THROW(to_string(t),
                         std::bad_variant_access);
         t = {
                 .linec = 0,
                 .type = TOKEN_CHAR,
                 .value = '"',
         };
-        ASSERT_EQ(t.operator std::string(), "'\"'");
+        ASSERT_EQ(to_string(t), "'\"'");
         t = {
                 .linec = 0,
                 .type = TOKEN_STRING,
                 .value = "voi saatana",
         };
-        ASSERT_EQ(t.operator std::string(), "\"voi saatana\"");
+        ASSERT_EQ(to_string(t), "\"voi saatana\"");
         t = {
                 .linec = 0,
                 .type = TOKEN_IDENTIFIER,
                 .value = "voi saatana",
         };
-        ASSERT_EQ(t.operator std::string(), "voi saatana");
+        ASSERT_EQ(to_string(t), "voi saatana");
         t = {
                 .linec = 0,
                 .type = TOKEN_INTEGER,
                 .value = 3000L,
         };
-        ASSERT_EQ(t.operator std::string(), "3000");
+        ASSERT_EQ(to_string(t), "3000");
         t = {
                 .linec = 0,
                 .type = TOKEN_SYMBOL,
                 .value = ',',
         };
-        ASSERT_EQ(t.operator std::string(), ",");
+        ASSERT_EQ(to_string(t), ",");
 }

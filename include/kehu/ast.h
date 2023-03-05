@@ -42,6 +42,22 @@ struct syntax_node
          * @return string of a kehu code
          */
         virtual std::string generate_kehu_code() const = 0;
+
+        bool operator==(const syntax_node &other) const
+        {
+                return typeid(this) == typeid(&other)
+                        && this->generate_kehu_code() == other.generate_kehu_code();
+        }
+
+        bool operator!=(const syntax_node &other) const
+        {
+                return ! (*this == other);
+        }
+
+        friend std::ostream &operator<<(std::ostream &out, const syntax_node &node)
+        {
+                return out << node.generate_kehu_code();
+        }
 };
 
 struct value_node : syntax_node

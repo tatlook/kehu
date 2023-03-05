@@ -18,6 +18,8 @@
 
 #include <kehu/token.h>
 #include <stdexcept>
+#include <ostream>
+#include <sstream>
 
 namespace kehu::token
 {
@@ -39,18 +41,29 @@ bool Token::operator==(const std::variant
         return value == this->value;
 }
 
-Token::operator std::string() const
+std::string to_string(const Token &t)
 {
-        switch (type) {
+        std::ostringstream out;
+        out << t;
+        return out.str();
+}
+
+std::ostream &operator<<(std::ostream &out, const Token &t)
+{
+        switch (t.type) {
         case TOKEN_IDENTIFIER:
-                return std::get<std::string>(value);
+                return out << std::get<std::string>(t.value);
         case TOKEN_SYMBOL:
-                return std::string(1, std::get<char>(value));
+                return out << std::get<char>(t.value);
         case TOKEN_INTEGER:
-                return std::to_string(std::get<signed long>(value));
+                return out << std::get<signed long>(t.value);
+        case TOKEN_STRING:
+                return out << '"' << std::get<std::string>(t.value) << '"';
+        case TOKEN_CHAR:
+                return out << '\'' << std::get<char>(t.value) << '\'';
         default:
                 throw std::logic_error("Token type out of enum: " 
-                                + std::to_string((int) type));
+                                + std::to_string((int) t.type));
         }
 }
 

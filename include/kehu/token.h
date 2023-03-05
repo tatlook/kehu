@@ -50,9 +50,10 @@ struct Token
         bool operator!=(const std::variant<double, signed long, std::string, char> value) const {
                 return ! (*this == value);
         }
-       
-        operator std::string() const;
 };
+
+std::ostream &operator<<(std::ostream &out, const Token &t);
+std::string to_string(const Token &t);
 
 const std::vector<Token> &tokenize(
                 const std::vector<std::string> &original_lines);
