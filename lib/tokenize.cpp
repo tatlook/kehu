@@ -107,9 +107,10 @@ static char read_char_section(std::string::const_iterator &c,
                 ++c;
                 return c[-1];
         }
-        c += 2;
-        if (c >= end)
+        ++c;
+        if (c == end)
                 throw token_exception("unexpected eof");
+        ++c;
         switch (c[-1]) {
         case 'n':
                 return '\n';
