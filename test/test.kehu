@@ -1,17 +1,17 @@
-@define eat $apples from 3 @{
+@define eat $apples from  @{
 @}.
 @define eat $apples from $piece @{
     for $apple in $apples @{
         print $apple to $stdout.
     @}.
-    return 0.
+    return .
 @}.
 
 @define main $args @{
     assign $mima to 1.
-    inline("$mima += 1").
+    inline "$mima += 1".
     set $mima to 4.
-    eat @array(2, 1, 3 $mimi) from @nil
+    eat [ 1 2 3 $mimi ] from $nil
     prin "great" to $stdout.
-    print $thing, @where($thing) "yes".
+    print $thing @where $thing "yes".
 @}.
