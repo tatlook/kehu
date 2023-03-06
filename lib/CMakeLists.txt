@@ -23,3 +23,12 @@ add_library(
 )
 
 target_include_directories(kehu-lib PRIVATE ../include)
+
+# Find the libraries that correspond to the LLVM components
+# that we wish to use
+llvm_map_components_to_libnames(llvm_libs core)
+
+message(STATUS "Found LLVM lib: ${llvm_libs}")
+
+# Link against LLVM libraries
+target_link_libraries(kehu-lib ${llvm_libs})
