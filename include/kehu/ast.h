@@ -42,6 +42,22 @@ struct syntax_node
          * @return string of a kehu code
          */
         virtual std::string generate_kehu_code() const = 0;
+
+        bool operator==(const syntax_node &other) const
+        {
+                return typeid(this) == typeid(&other)
+                        && this->generate_kehu_code() == other.generate_kehu_code();
+        }
+
+        bool operator!=(const syntax_node &other) const
+        {
+                return ! (*this == other);
+        }
+
+        friend std::ostream &operator<<(std::ostream &out, const syntax_node &node)
+        {
+                return out << node.generate_kehu_code();
+        }
 };
 
 struct value_node : syntax_node
@@ -51,6 +67,30 @@ struct value_node : syntax_node
 struct variable_reference_node : value_node
 {
         std::string name;
+        std::string generate_kehu_code() const override;
+};
+
+struct raw_char_value_node : value_node
+{
+        char value;
+        std::string generate_kehu_code() const override;
+};
+
+struct raw_string_value_node : value_node
+{
+        std::string value;
+        std::string generate_kehu_code() const override;
+};
+
+struct raw_integer_value_node : value_node
+{
+        signed long value;
+        std::string generate_kehu_code() const override;
+};
+
+struct word_node : value_node
+{
+        std::string word;
         std::string generate_kehu_code() const override;
 };
 
@@ -78,7 +118,7 @@ struct block_node : value_node
 
 struct function_definition_node : syntax_node
 {
-        std::vector<std::variant<std::string, std::unique_ptr<variable_reference_node>>> lex;
+        std::vector<std::unique_ptr<variable_reference_node>> lex;
         std::unique_ptr<block_node> block;
         std::string generate_kehu_code() const override;
 };
@@ -99,9 +139,9 @@ struct file_node : syntax_node
  * int saatana
  * </pre>
  */
-struct primeval_statement_node : statement_node
+struct tiled_statement_node : statement_node
 {
-        std::vector<std::variant<std::string, std::unique_ptr<value_node>>> lex;
+        std::vector<std::unique_ptr<value_node>> lex;
         std::string generate_kehu_code() const override;
 };
 
@@ -114,17 +154,17 @@ std::unique_ptr<syntax_node> parse_primeval_ast(const std::vector<token::Token> 
 
 class syntax_error : public std::runtime_error
 {
-        const token::Token *error_token;
+        const token::Token error_token;
 public:
         explicit syntax_error(const std::string &message)
-                        : std::runtime_error(message), error_token(nullptr)
+                        : std::runtime_error(message), error_token({.linec = 0})
         {}
 
         explicit syntax_error(const std::string &message, token::Token t) 
-                        : std::runtime_error(message), error_token(&t)
+                        : std::runtime_error(message), error_token(t)
         {}
 
-        const token::Token *get_error_token() const noexcept
+        const token::Token &get_error_token() const noexcept
         {
                 return error_token;
         }

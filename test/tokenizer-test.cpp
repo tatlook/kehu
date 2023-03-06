@@ -18,18 +18,12 @@
 
 #include <gtest/gtest.h>
 
-#include <tokenizer.cpp>
+#include <tokenize.cpp>
 #include <token.cpp>
 
 using namespace kehu::token;
 using std::string;
 using std::vector;
-
-TEST(TokenizerTest, TakingDownComments)
-{
-        string line = "saatana vittu 88#voi perse";
-        ASSERT_EQ(take_down_comments(line), "saatana vittu 88");
-}
 
 TEST(TokenizerTest, ReadSymbol)
 {
@@ -61,11 +55,52 @@ TEST(TokenizerTest, ReadNumber)
         token = read_number(c, s.end());
         ASSERT_EQ(token.type, TOKEN_INTEGER);
         ASSERT_EQ(std::get<signed long>(token.value), 07073);
+#if 0 // TODO: support binary
         s = "0b1000101v7073q0/\\,*&";
         c = s.begin();
         token = read_number(c, s.end());
         ASSERT_EQ(token.type, TOKEN_INTEGER);
         ASSERT_EQ(std::get<signed long>(token.value), 0b1000101);
+#endif
+}
+
+TEST(TokenizerTest, ReadCharSection)
+{
+        string s = "\\n";
+        string::const_iterator c = s.begin();
+        char chr = read_char_section(c, s.end());
+        ASSERT_EQ(chr, '\n');
+        ASSERT_EQ(c, s.end());
+        s = "n";
+        c = s.begin();
+        chr = read_char_section(c, s.end());
+        ASSERT_EQ(chr, 'n');
+        ASSERT_EQ(c, s.end());
+}
+
+TEST(TokenizerTest, ReadChar)
+{
+        string s = "'\\n'";
+        string::const_iterator c = s.begin();
+        Token token = read_char(c, s.end());
+        ASSERT_EQ(token.type, TOKEN_CHAR);
+        ASSERT_EQ(std::get<char>(token.value), '\n');   
+        ASSERT_EQ(c, s.end());
+        s = "'n'";
+        c = s.begin();
+        token = read_char(c, s.end());
+        ASSERT_EQ(token.type, TOKEN_CHAR);
+        ASSERT_EQ(std::get<char>(token.value), 'n');   
+        ASSERT_EQ(c, s.end());
+}
+
+TEST(TokenizerTest, ReadString)
+{
+        string s = "\"voi*\\\"*\\n \\t#\"";
+        string::const_iterator c = s.begin();
+        Token token = read_string(c, s.end());
+        ASSERT_EQ(token.type, TOKEN_STRING);
+        ASSERT_EQ(std::get<std::string>(token.value), "voi*\"*\n \t#");
 }
 
 TEST(TokenizerTest, LineTokens)

@@ -21,18 +21,11 @@
 namespace kehu::ast
 {
 
-std::string primeval_statement_node::generate_kehu_code() const
+std::string tiled_statement_node::generate_kehu_code() const
 {
         std::string code;
         for (const auto &l : this->lex) {
-                if (std::holds_alternative<std::string>(l)) {
-                        code += std::get<std::string>(l);
-                } else if (std::holds_alternative<std::unique_ptr<value_node>>(l)) {
-                        code += std::get<std::unique_ptr<value_node>>(l)
-                                        ->generate_kehu_code();
-                } else {
-                        throw std::logic_error(" ");
-                }
+                code += l->generate_kehu_code();
                 code += ' ';
         }
         code += '.';
@@ -44,9 +37,29 @@ std::string variable_reference_node::generate_kehu_code() const
         return name;
 }
 
+std::string raw_char_value_node::generate_kehu_code() const
+{
+        return std::string("'") + value + '\'';
+}
+
+std::string raw_string_value_node::generate_kehu_code() const
+{
+        return '"' + value + '"';
+}
+
+std::string raw_integer_value_node::generate_kehu_code() const
+{
+        return std::to_string(value);
+}
+
 std::string function_call_node::generate_kehu_code() const
 {
         return std::string(); // FIXME
+}
+
+std::string word_node::generate_kehu_code() const
+{
+        return word;
 }
 
 std::string expression_statement_node::generate_kehu_code() const
