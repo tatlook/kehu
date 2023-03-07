@@ -42,7 +42,7 @@ TEST(ParseTiled, ReadStatment)
                 "yes $ze."
         });
         auto t = tokens.begin();
-        auto statement = read_tiled_statement(t, tokens.end());
+        auto statement = read_statement(t, tokens.end());
         ASSERT_EQ(statement->lex.size(), 2);
         ASSERT_EQ(typeid(*(statement->lex[0])), typeid(word_node));
         ASSERT_EQ(typeid(*(statement->lex[1])), typeid(variable_reference_node));
@@ -62,7 +62,7 @@ TEST(ParseTiled, ReadBlock)
                 "yes."
         });
         t = statement_tokens.begin();
-        auto statement = read_tiled_statement(t, tokens.end());
+        auto statement = read_statement(t, tokens.end());
         ASSERT_EQ(*block->statements[0], *statement);
 }
 
