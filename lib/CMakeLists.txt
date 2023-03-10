@@ -20,6 +20,7 @@ add_library(
         tokenize.cpp
         ast.cpp
         parse_tiled.cpp
+        transform_ast.cpp
 )
 
 target_include_directories(kehu-lib PRIVATE ../include)

@@ -96,17 +96,17 @@ static std::unique_ptr<value_node> read_variable(vector<Token>::const_iterator &
         return var;
 }
 
-static std::unique_ptr<statement_node> read_statement(
+static std::unique_ptr<tiled_statement_node> read_tiled_statement(
                 vector<Token>::const_iterator &t,
                 const vector<Token>::const_iterator &end);
 
-static std::unique_ptr<value_node> read_block(vector<Token>::const_iterator &t,
+static std::unique_ptr<value_node> read_tiled_block(vector<Token>::const_iterator &t,
                 const vector<Token>::const_iterator &end)
 {
         if (*t != "@{") 
                 return read_variable(t, end);
         ++t;
-        auto block = std::make_unique<block_node>();
+        auto block = std::make_unique<tiled_block_node>();
         while (true) {
                 if (t == end)
                         throw syntax_error("unexpected ending", t[-1]);
@@ -114,23 +114,23 @@ static std::unique_ptr<value_node> read_block(vector<Token>::const_iterator &t,
                         continue;
                 if (*t == "@}")
                         break;
-                block->statements.push_back(read_statement(t, end));
+                block->statements.push_back(read_tiled_statement(t, end));
         }
         ++t;
         return block;
 }
 
-static std::unique_ptr<statement_node> read_statement(
+static std::unique_ptr<tiled_statement_node> read_tiled_statement(
                 vector<Token>::const_iterator &t,
                 const vector<Token>::const_iterator &end)
 {
-        auto primeval = std::make_unique<statement_node>();
+        auto primeval = std::make_unique<tiled_statement_node>();
         while (true) {
                 if (t == end)
                         throw syntax_error("unexpected ending", t[-1]);
                 if (*t == '.')
                         break;
-                auto value_node = read_block(t, end);
+                auto value_node = read_tiled_block(t, end);
                 primeval->lex.push_back(std::move(value_node));
         }
         ++t;
@@ -142,7 +142,7 @@ static std::unique_ptr<syntax_node> read_compile_unit(vector<Token>::const_itera
 {
         auto file = std::make_unique<compile_unit_node>();
         while (t != end) {
-                file->global_definitions.push_back(read_statement(t, end));
+                file->global_definitions.push_back(read_tiled_statement(t, end));
         }
         return file;
 }

@@ -64,25 +64,29 @@ struct value_node : syntax_node
 {
 };
 
-struct variable_reference_node : value_node
+struct expression_node : value_node
+{
+};
+
+struct variable_reference_node : expression_node
 {
         std::string name;
         std::string generate_kehu_code() const override;
 };
 
-struct raw_char_value_node : value_node
+struct raw_char_value_node : expression_node
 {
         char value;
         std::string generate_kehu_code() const override;
 };
 
-struct raw_string_value_node : value_node
+struct raw_string_value_node : expression_node
 {
         std::string value;
         std::string generate_kehu_code() const override;
 };
 
-struct raw_integer_value_node : value_node
+struct raw_integer_value_node : expression_node
 {
         signed long value;
         std::string generate_kehu_code() const override;
@@ -94,10 +98,31 @@ struct word_node : value_node
         std::string generate_kehu_code() const override;
 };
 
+struct statement_node : syntax_node
+{
+};
+
+/**
+ * 
+ * @brief 
+ * @tparam T a statement_node
+ */
+template <typename T>
 struct block_node : value_node
 {
-        std::vector<std::unique_ptr<statement_node>> statements;
+        std::vector<std::unique_ptr<T>> statements;
         std::string generate_kehu_code() const override;
+private:
+        inline void __test_have_member() {
+                std::string (T::*__test)() const = T::generate_kehu_code;
+        };
+};
+
+struct tiled_statement_node;
+template class block_node<tiled_statement_node>;
+
+struct tiled_block_node : block_node<tiled_statement_node>
+{
 };
 
 /**
@@ -116,7 +141,7 @@ struct compile_unit_node : syntax_node
  * int saatana
  * </pre>
  */
-struct statement_node : syntax_node
+struct tiled_statement_node : statement_node
 {
         std::vector<std::unique_ptr<value_node>> lex;
         std::string generate_kehu_code() const override;
@@ -128,6 +153,9 @@ struct statement_node : syntax_node
  * @author Zhen You Zhe
  */
 std::unique_ptr<syntax_node> parse_primeval_ast(const std::vector<token::Token> &tokens);
+
+std::unique_ptr<syntax_node> transform_ast(
+                const std::unique_ptr<syntax_node> syntax_node);
 
 class syntax_error : public std::runtime_error
 {
@@ -147,7 +175,21 @@ public:
         }
 };
 
-}
+struct executable_statement_node : tiled_statement_node
+{
+};
 
+struct function_block_node : block_node<executable_statement_node>
+{
+};
+
+struct function_definition_node : syntax_node
+{
+        std::vector<std::unique_ptr<value_node>> lex;
+        function_block_node block;
+        std::string generate_kehu_code() const override;
+};
+
+} // namespace kehu::ast
 
 #endif // _SYNTAX_TREE_H

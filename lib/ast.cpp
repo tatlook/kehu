@@ -21,7 +21,7 @@
 namespace kehu::ast
 {
 
-std::string statement_node::generate_kehu_code() const
+std::string tiled_statement_node::generate_kehu_code() const
 {
         std::string code;
         for (const auto &l : this->lex) {
@@ -57,7 +57,8 @@ std::string word_node::generate_kehu_code() const
         return word;
 }
 
-std::string block_node::generate_kehu_code() const
+template <typename T>
+std::string block_node<T>::generate_kehu_code() const
 {
         std::string code;
         code += "@{\n";
@@ -76,6 +77,20 @@ std::string compile_unit_node::generate_kehu_code() const
                 code += st->generate_kehu_code();
                 code += '\n';
         }
+        return code;
+}
+
+std::string function_definition_node::generate_kehu_code() const
+{
+        std::string code;
+        code += "define function";
+        code += '\n';
+        for (const auto &l : this->lex) {
+                code += l->generate_kehu_code();
+                code += ' ';
+        }
+        code += block.generate_kehu_code();
+        code += '.';
         return code;
 }
 
