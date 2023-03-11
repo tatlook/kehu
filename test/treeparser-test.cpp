@@ -31,8 +31,8 @@ TEST(ParseTiled, ReadRawString)
         });
         auto t = tokens.begin();
         auto ast = read_raw_string(t, tokens.end());
-        ASSERT_EQ(typeid(*ast), typeid(raw_string_value_node));
-        raw_string_value_node *string = static_cast<raw_string_value_node *>(ast.release());
+        ASSERT_EQ(typeid(*ast), typeid(raw_string_node));
+        raw_string_node *string = static_cast<raw_string_node *>(ast.release());
         ASSERT_EQ(string->value, "yes");
 }
 

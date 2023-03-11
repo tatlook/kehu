@@ -37,17 +37,17 @@ std::string variable_reference_node::generate_kehu_code() const
         return name;
 }
 
-std::string raw_char_value_node::generate_kehu_code() const
+std::string raw_char_node::generate_kehu_code() const
 {
         return std::string("'") + value + '\'';
 }
 
-std::string raw_string_value_node::generate_kehu_code() const
+std::string raw_string_node::generate_kehu_code() const
 {
         return '"' + value + '"';
 }
 
-std::string raw_integer_value_node::generate_kehu_code() const
+std::string raw_integer_node::generate_kehu_code() const
 {
         return std::to_string(value);
 }

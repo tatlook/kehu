@@ -74,19 +74,19 @@ struct variable_reference_node : expression_node
         std::string generate_kehu_code() const override;
 };
 
-struct raw_char_value_node : expression_node
+struct raw_char_node : expression_node
 {
         char value;
         std::string generate_kehu_code() const override;
 };
 
-struct raw_string_value_node : expression_node
+struct raw_string_node : expression_node
 {
         std::string value;
         std::string generate_kehu_code() const override;
 };
 
-struct raw_integer_value_node : expression_node
+struct raw_integer_node : expression_node
 {
         signed long value;
         std::string generate_kehu_code() const override;
