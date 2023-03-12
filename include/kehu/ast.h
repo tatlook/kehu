@@ -110,7 +110,7 @@ struct statement_node : syntax_node
 template <typename T>
 struct block_node : value_node
 {
-        std::vector<std::unique_ptr<T>> statements;
+        std::vector<std::shared_ptr<T>> statements;
         std::string generate_kehu_code() const override;
 private:
         inline void __test_have_member() {
@@ -130,7 +130,7 @@ struct tiled_block_node : block_node<tiled_statement_node>
  */
 struct compile_unit_node : syntax_node
 {
-        std::vector<std::unique_ptr<syntax_node>> global_definitions;
+        std::vector<std::shared_ptr<syntax_node>> global_definitions;
         std::string generate_kehu_code() const override;
 };
 
@@ -143,7 +143,7 @@ struct compile_unit_node : syntax_node
  */
 struct tiled_statement_node : statement_node
 {
-        std::vector<std::unique_ptr<value_node>> lex;
+        std::vector<std::shared_ptr<value_node>> lex;
         std::string generate_kehu_code() const override;
 };
 
@@ -152,10 +152,10 @@ struct tiled_statement_node : statement_node
  * 
  * @author Zhen You Zhe
  */
-std::unique_ptr<syntax_node> parse_primeval_ast(const std::vector<token::Token> &tokens);
+std::shared_ptr<syntax_node> parse_primeval_ast(const std::vector<token::Token> &tokens);
 
-std::unique_ptr<syntax_node> transform_ast(
-                const std::unique_ptr<syntax_node> syntax_node);
+std::shared_ptr<syntax_node> transform_ast(
+                const std::shared_ptr<syntax_node> syntax_node);
 
 class syntax_error : public std::runtime_error
 {
@@ -185,7 +185,7 @@ struct function_block_node : block_node<executable_statement_node>
 
 struct function_definition_node : syntax_node
 {
-        std::vector<std::unique_ptr<value_node>> lex;
+        std::vector<std::shared_ptr<value_node>> lex;
         function_block_node block;
         std::string generate_kehu_code() const override;
 };

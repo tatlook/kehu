@@ -32,7 +32,7 @@ TEST(ParseTiled, ReadRawString)
         auto t = tokens.begin();
         auto ast = read_raw_string(t, tokens.end());
         ASSERT_EQ(typeid(*ast), typeid(raw_string_node));
-        raw_string_node *string = static_cast<raw_string_node *>(ast.release());
+        auto string = std::static_pointer_cast<raw_string_node>(ast);
         ASSERT_EQ(string->value, "yes");
 }
 
@@ -56,7 +56,7 @@ TEST(ParseTiled, ReadBlock)
         auto t = tokens.begin();
         auto ast = read_tiled_block(t, tokens.end());
         ASSERT_EQ(typeid(*ast), typeid(tiled_block_node));
-        tiled_block_node *block = static_cast<tiled_block_node *>(ast.release());
+        auto block = std::static_pointer_cast<tiled_block_node>(ast);
         ASSERT_EQ(block->statements.size(), 1);
         const vector<Token> statement_tokens = tokenize({
                 "yes."
@@ -71,7 +71,7 @@ TEST(ParseTiled, TreePa)
         vector<Token> tokens = tokenize({
                 "@d v $2 k @{ @}."
         });
-        std::unique_ptr<kehu::ast::syntax_node> ast = parse_primeval_ast(tokens);
+        auto ast = parse_primeval_ast(tokens);
         std::ofstream of;
         of.open("k.ll");
         of << ast->generate_kehu_code();

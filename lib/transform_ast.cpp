@@ -22,11 +22,12 @@ namespace kehu::ast
 {
 
 template <typename T>
-static const T *require_cast(const std::unique_ptr<syntax_node> &node)
+static const std::shared_ptr<T> require_cast(
+                const std::shared_ptr<syntax_node> node)
 {
         if (typeid(*node) != typeid(T))
                 throw syntax_error("cannot cast " __FILE__);
-        return static_cast<T *>(node.get());
+        return std::static_pointer_cast<T>(node);
 }
 
 static std::unique_ptr<syntax_node> transform_global_variable_definition(
@@ -35,33 +36,33 @@ static std::unique_ptr<syntax_node> transform_global_variable_definition(
 
 }
 
-static std::unique_ptr<syntax_node> transform_function_definition(
-                const tiled_statement_node *node)
+static std::shared_ptr<syntax_node> transform_function_definition(
+                const std::shared_ptr<tiled_statement_node> node)
 {
         if (node->lex.size() < 2) // TODO
                 return transform_global_variable_definition(node);
 
 }
 
-static std::unique_ptr<syntax_node> transform_global_definition(
-                const std::unique_ptr<syntax_node> &node)
+static std::shared_ptr<syntax_node> transform_global_definition(
+                const std::shared_ptr<syntax_node> node)
 {
-        const auto &st = require_cast<tiled_statement_node>(node);
+        const auto st = require_cast<tiled_statement_node>(node);
         return transform_function_definition(st);
 }
 
-static std::unique_ptr<syntax_node> transform_compile_unit(
-                const std::unique_ptr<syntax_node> &node)
+static std::shared_ptr<syntax_node> transform_compile_unit(
+                const std::shared_ptr<syntax_node> node)
 {
-        const auto &cu = require_cast<compile_unit_node>(node);
+        const auto cu = require_cast<compile_unit_node>(node);
         for (const auto &node2 : cu->global_definitions) {
                 transform_global_definition(node2);
         }
         
 }
 
-std::unique_ptr<syntax_node> transform_ast(
-                const std::unique_ptr<syntax_node> syntax_node)
+std::shared_ptr<syntax_node> transform_ast(
+                const std::shared_ptr<syntax_node> syntax_node)
 {
         return transform_compile_unit(syntax_node);
 }

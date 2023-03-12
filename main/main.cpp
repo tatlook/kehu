@@ -76,9 +76,9 @@ int main(int argc, char const *argv[])
                 target << t << " " << t.linec << std::endl;
         }
 
-        std::unique_ptr<ast::syntax_node> ast;
+        std::shared_ptr<ast::syntax_node> ast;
         try {
-                ast.reset(ast::parse_primeval_ast(tokens).release());
+                ast = ast::parse_primeval_ast(tokens);
         } catch (ast::syntax_error &e) {
                 token::Token t = e.get_error_token();
                 if (t.linec != 0) {
