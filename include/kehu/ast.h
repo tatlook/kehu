@@ -68,6 +68,12 @@ struct expression_node : value_node
 {
 };
 
+struct type_node : value_node
+{
+        std::string name;
+        std::string generate_kehu_code() const override;
+};
+
 struct variable_reference_node : expression_node
 {
         std::string name;

@@ -85,11 +85,34 @@ static std::shared_ptr<value_node> read_word(vector<Token>::const_iterator &t,
         return word;
 }
 
+static bool is_type(const Token &t)
+{
+        if (t.type != TOKEN_IDENTIFIER)
+                return false;
+        const string &s = std::get<string>(t.value);
+        if (s.size() < 2)
+                return false;
+        if (s.at(0) == '%')
+                return true;
+        return false;
+}
+
+static std::shared_ptr<value_node> read_type(vector<Token>::const_iterator &t,
+                const vector<Token>::const_iterator &end)
+{
+        if ( ! is_type(*t))
+                return read_word(t, end);
+        auto type = std::make_shared<type_node>();
+        type->name = std::get<string>(t->value);
+        ++t;
+        return type;
+}
+
 static std::shared_ptr<value_node> read_variable(vector<Token>::const_iterator &t,
                 const vector<Token>::const_iterator &end)
 {
         if ( ! is_variable(*t))
-                return read_word(t, end);
+                return read_type(t, end);
         auto var = std::make_shared<variable_reference_node>();
         var->name = std::get<string>(t->value);
         ++t;

@@ -24,6 +24,19 @@
 using namespace kehu::ast;
 using namespace kehu::token;
 
+TEST(ParseTiled, ReadType)
+{
+        const vector<Token> tokens = tokenize({
+                "%type-name+yes"
+        });
+        auto t = tokens.begin();
+        auto ast = read_type(t, tokens.end());
+        ASSERT_EQ(typeid(*ast), typeid(type_node));
+        auto string = std::static_pointer_cast<type_node>(ast);
+        ASSERT_EQ(string->name, "%type-name+yes");
+        ASSERT_EQ(string->generate_kehu_code(), "%type-name+yes");
+}
+
 TEST(ParseTiled, ReadRawString)
 {
         const vector<Token> tokens = tokenize({

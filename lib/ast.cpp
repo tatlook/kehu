@@ -32,6 +32,11 @@ std::string tiled_statement_node::generate_kehu_code() const
         return code;
 }
 
+std::string type_node::generate_kehu_code() const
+{
+        return name;
+}
+
 std::string variable_reference_node::generate_kehu_code() const
 {
         return name;
