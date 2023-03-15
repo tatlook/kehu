@@ -185,16 +185,38 @@ struct executable_statement_node : tiled_statement_node
 {
 };
 
-struct function_block_node : block_node<executable_statement_node>
+struct definition_node : syntax_node
 {
+        
 };
 
-struct function_definition_node : syntax_node
+struct variable_definition_node : definition_node
 {
-        std::vector<std::shared_ptr<value_node>> lex;
-        function_block_node block;
+        std::shared_ptr<type_node> type;
+        std::shared_ptr<variable_reference_node> variable;
         std::string generate_kehu_code() const override;
 };
+
+struct executable_block_node : virtual block_node<executable_statement_node>,
+                virtual expression_node
+{
+        std::string generate_kehu_code() const override;
+};
+
+struct function_definition_node : definition_node
+{
+        std::vector<std::shared_ptr<value_node>> lex;
+        std::shared_ptr<executable_block_node> block;
+        std::string generate_kehu_code() const override;
+};
+
+struct definition_block_node : block_node<definition_node>
+{
+
+};
+
+template class block_node<definition_node>;
+
 
 } // namespace kehu::ast
 

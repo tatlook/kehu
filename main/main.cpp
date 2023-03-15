@@ -92,6 +92,11 @@ int main(int argc, char const *argv[])
                 return 1;
         }
         target << ast->generate_kehu_code();
+
+        auto ast2 = ast::transform_ast(ast);
+        
+        target << ast2->generate_kehu_code();
+
         target.close();
 
         return 0;

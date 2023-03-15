@@ -30,21 +30,80 @@ static const std::shared_ptr<T> require_cast(
         return std::static_pointer_cast<T>(node);
 }
 
-static std::unique_ptr<syntax_node> transform_global_variable_definition(
-                const tiled_statement_node *node)
-{
 
+static bool match_firsts_of_lex(const std::shared_ptr<tiled_statement_node> node,
+                std::initializer_list<std::string> lex)
+{
+        if (node->lex.size() < lex.size())
+                return false;
+        auto l = lex.begin();
+        for (int i = 0; i < node->lex.size(); i++, ++l) {
+                if (node->lex[i]->generate_kehu_code() != *l)
+                        return false;
+        }
+        return true;
 }
 
-static std::shared_ptr<syntax_node> transform_function_definition(
+static std::shared_ptr<executable_statement_node> transform_executable_statement(
                 const std::shared_ptr<tiled_statement_node> node)
 {
-        if (node->lex.size() < 2) // TODO
-                return transform_global_variable_definition(node);
+        auto st = std::make_shared<executable_statement_node>();
 
+        // TODO
+
+        return st;
 }
 
-static std::shared_ptr<syntax_node> transform_global_definition(
+static std::shared_ptr<executable_block_node> transform_executable_block(
+                const std::shared_ptr<tiled_block_node> node)
+{
+        auto exb = std::make_shared<executable_block_node>();
+        for (auto st1 : node->statements) {
+                auto st2 = transform_executable_statement(st1);
+                exb->statements.push_back(st2);
+        }
+        return exb;
+}
+
+static std::shared_ptr<definition_node> transform_global_variable_definition(
+                const std::shared_ptr<tiled_statement_node> node)
+{
+        if ( ! match_firsts_of_lex(node, { "define", "variable" }))
+                throw syntax_error("of piru"); // TODO
+        if (node->lex.size() < 4
+                        || typeid(*node->lex[2])
+                        != typeid(type_node)
+                        || typeid(*node->lex[3])
+                        != typeid(variable_reference_node))
+                throw syntax_error("expected variable name");
+        auto var = std::make_shared<variable_definition_node>();
+        var->type = std::static_pointer_cast<type_node>(node->lex[2]);
+        var->variable = std::static_pointer_cast
+                        <variable_reference_node>(node->lex[3]);
+        return var;
+}
+
+static std::shared_ptr<definition_node> transform_function_definition(
+                const std::shared_ptr<tiled_statement_node> node)
+{
+        if ( ! match_firsts_of_lex(node, { "define", "function" }))
+                return transform_global_variable_definition(node);
+        if (typeid(node->lex.back()) != typeid(tiled_block_node))
+                throw syntax_error("missing function body");
+
+        auto fn = std::make_shared<function_definition_node>();
+        
+        auto &&l = node->lex.begin();
+        l += 2;
+        for ( ; l != (node->lex.end() - 1); ++l) {
+                fn->lex.push_back(*l); // TODO: parameter and type not word
+        }
+        fn->block = transform_executable_block(
+                std::static_pointer_cast<tiled_block_node>(node->lex.back()));
+        return fn;
+}
+
+static std::shared_ptr<definition_node> transform_global_definition(
                 const std::shared_ptr<syntax_node> node)
 {
         const auto st = require_cast<tiled_statement_node>(node);
@@ -55,10 +114,11 @@ static std::shared_ptr<syntax_node> transform_compile_unit(
                 const std::shared_ptr<syntax_node> node)
 {
         const auto cu = require_cast<compile_unit_node>(node);
+        auto cu2 = std::make_shared<definition_block_node>();
         for (const auto &node2 : cu->global_definitions) {
-                transform_global_definition(node2);
+                cu2->statements.push_back(transform_global_definition(node2));
         }
-        
+        return cu2;
 }
 
 std::shared_ptr<syntax_node> transform_ast(

@@ -85,6 +85,21 @@ std::string compile_unit_node::generate_kehu_code() const
         return code;
 }
 
+std::string variable_definition_node::generate_kehu_code() const
+{
+        std::string code;
+        code += "define variable";
+        code += '\n';
+        code += variable->generate_kehu_code();
+        code += '.';
+        return code;
+}
+
+std::string executable_block_node::generate_kehu_code() const
+{
+        return block_node<executable_statement_node>::generate_kehu_code();
+}
+
 std::string function_definition_node::generate_kehu_code() const
 {
         std::string code;
@@ -94,7 +109,8 @@ std::string function_definition_node::generate_kehu_code() const
                 code += l->generate_kehu_code();
                 code += ' ';
         }
-        code += block.generate_kehu_code();
+        code += '\n';
+        code += block->generate_kehu_code();
         code += '.';
         return code;
 }
