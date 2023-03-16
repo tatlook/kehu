@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined(_SYNTAX_TREE_H)
-#define _SYNTAX_TREE_H
+#if !defined(_KEHU_AST_H)
+#define _KEHU_AST_H
 
 #include <vector>
 #include <string>
@@ -214,4 +214,4 @@ std::shared_ptr<compile_unit_node> transform_ast(
 
 } // namespace kehu::ast
 
-#endif // _SYNTAX_TREE_H
+#endif // _KEHU_AST_H

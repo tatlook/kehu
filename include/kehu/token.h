@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined(_TOKEN_H)
-#define _TOKEN_H
+#if !defined(_KEHU_TOKEN_H)
+#define _KEHU_TOKEN_H
 
 #include <vector>
 #include <string>
@@ -68,4 +68,4 @@ public:
         
 } // namespace pncl::token
 
-#endif // _TOKEN_H
+#endif // _KEHU_TOKEN_H
