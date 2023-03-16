@@ -160,22 +160,22 @@ static std::shared_ptr<tiled_statement_node> read_tiled_statement(
         return primeval;
 }
 
-static std::shared_ptr<syntax_node> read_compile_unit(vector<Token>::const_iterator &t,
+static std::shared_ptr<tiled_block_node> read_root_block(vector<Token>::const_iterator &t,
                 const vector<Token>::const_iterator &end)
 {
-        auto file = std::make_shared<compile_unit_node>();
+        auto root = std::make_shared<tiled_block_node>();
         while (t != end) {
-                file->global_definitions.push_back(read_tiled_statement(t, end));
+                root->statements.push_back(read_tiled_statement(t, end));
         }
-        return file;
+        return root;
 }
 
-std::shared_ptr<syntax_node> parse_primeval_ast(
+std::shared_ptr<tiled_block_node> parse_primeval_ast(
                 const std::vector<token::Token> &tokens)
 {
         vector<Token>::const_iterator t = tokens.begin();
         vector<Token>::const_iterator end = tokens.end();
-        return read_compile_unit(t, end);
+        return read_root_block(t, end);
 }
 
 } // namespace kehu::ast

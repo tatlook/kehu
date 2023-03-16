@@ -21,16 +21,6 @@
 namespace kehu::ast
 {
 
-template <typename T>
-static const std::shared_ptr<T> require_cast(
-                const std::shared_ptr<syntax_node> node)
-{
-        if (typeid(*node) != typeid(T))
-                throw syntax_error("cannot cast " __FILE__);
-        return std::static_pointer_cast<T>(node);
-}
-
-
 static bool match_firsts_of_lex(const std::shared_ptr<tiled_statement_node> node,
                 std::initializer_list<std::string> lex)
 {
@@ -104,25 +94,23 @@ static std::shared_ptr<definition_node> transform_function_definition(
 }
 
 static std::shared_ptr<definition_node> transform_global_definition(
-                const std::shared_ptr<syntax_node> node)
+                const std::shared_ptr<tiled_statement_node> st)
 {
-        const auto st = require_cast<tiled_statement_node>(node);
         return transform_function_definition(st);
 }
 
-static std::shared_ptr<syntax_node> transform_compile_unit(
-                const std::shared_ptr<syntax_node> node)
+static std::shared_ptr<compile_unit_node> transform_compile_unit(
+                const std::shared_ptr<tiled_block_node> root)
 {
-        const auto cu = require_cast<compile_unit_node>(node);
-        auto cu2 = std::make_shared<definition_block_node>();
-        for (const auto &node2 : cu->global_definitions) {
-                cu2->statements.push_back(transform_global_definition(node2));
+        auto cu = std::make_shared<compile_unit_node>();
+        for (const auto node : root->statements) {
+                cu->statements.push_back(transform_global_definition(node));
         }
-        return cu2;
+        return cu;
 }
 
-std::shared_ptr<syntax_node> transform_ast(
-                const std::shared_ptr<syntax_node> syntax_node)
+std::shared_ptr<compile_unit_node> transform_ast(
+                const std::shared_ptr<tiled_block_node> syntax_node)
 {
         return transform_compile_unit(syntax_node);
 }

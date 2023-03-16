@@ -75,16 +75,6 @@ std::string block_node<T>::generate_kehu_code() const
         return code;
 }
 
-std::string compile_unit_node::generate_kehu_code() const
-{
-        std::string code;
-        for (const auto &st : global_definitions) {
-                code += st->generate_kehu_code();
-                code += '\n';
-        }
-        return code;
-}
-
 std::string variable_definition_node::generate_kehu_code() const
 {
         std::string code;

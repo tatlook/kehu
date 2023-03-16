@@ -76,7 +76,7 @@ int main(int argc, char const *argv[])
                 target << t << " " << t.linec << std::endl;
         }
 
-        std::shared_ptr<ast::syntax_node> ast;
+        std::shared_ptr<ast::tiled_block_node> ast;
         try {
                 ast = ast::parse_primeval_ast(tokens);
         } catch (ast::syntax_error &e) {
@@ -91,7 +91,7 @@ int main(int argc, char const *argv[])
                 }
                 return 1;
         }
-        target << ast->generate_kehu_code();
+        target << ast->generate_kehu_code() << std::flush;
 
         auto ast2 = ast::transform_ast(ast);
         

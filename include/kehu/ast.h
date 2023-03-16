@@ -132,15 +132,6 @@ struct tiled_block_node : block_node<tiled_statement_node>
 };
 
 /**
- * @brief 
- */
-struct compile_unit_node : syntax_node
-{
-        std::vector<std::shared_ptr<syntax_node>> global_definitions;
-        std::string generate_kehu_code() const override;
-};
-
-/**
  * @brief The primeval expression before re-analysing.
  * It might be
  * <pre>
@@ -158,10 +149,7 @@ struct tiled_statement_node : statement_node
  * 
  * @author Zhen You Zhe
  */
-std::shared_ptr<syntax_node> parse_primeval_ast(const std::vector<token::Token> &tokens);
-
-std::shared_ptr<syntax_node> transform_ast(
-                const std::shared_ptr<syntax_node> syntax_node);
+std::shared_ptr<tiled_block_node> parse_primeval_ast(const std::vector<token::Token> &tokens);
 
 class syntax_error : public std::runtime_error
 {
@@ -217,6 +205,12 @@ struct definition_block_node : block_node<definition_node>
 
 template class block_node<definition_node>;
 
+struct compile_unit_node : definition_block_node
+{
+};
+
+std::shared_ptr<compile_unit_node> transform_ast(
+                const std::shared_ptr<tiled_block_node> root_node);
 
 } // namespace kehu::ast
 
