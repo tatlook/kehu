@@ -66,12 +66,12 @@ template <typename T>
 std::string block_node<T>::generate_kehu_code() const
 {
         std::string code;
-        code += "@{\n";
+        code += "{\n";
         for (const auto &st : statements) {
                 code += st->generate_kehu_code();
                 code += '\n';
         }
-        code += "@}";
+        code += "}";
         return code;
 }
 

@@ -126,7 +126,7 @@ static std::shared_ptr<tiled_statement_node> read_tiled_statement(
 static std::shared_ptr<value_node> read_tiled_block(vector<Token>::const_iterator &t,
                 const vector<Token>::const_iterator &end)
 {
-        if (*t != "@{") 
+        if (*t != "{") 
                 return read_variable(t, end);
         ++t;
         auto block = std::make_shared<tiled_block_node>();
@@ -135,7 +135,7 @@ static std::shared_ptr<value_node> read_tiled_block(vector<Token>::const_iterato
                         throw syntax_error("unexpected ending", t[-1]);
                 if (*t == '.')
                         continue;
-                if (*t == "@}")
+                if (*t == "}")
                         break;
                 block->statements.push_back(read_tiled_statement(t, end));
         }

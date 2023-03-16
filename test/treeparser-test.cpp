@@ -64,7 +64,7 @@ TEST(ParseTiled, ReadStatment)
 TEST(ParseTiled, ReadBlock)
 {
         const vector<Token> tokens = tokenize({
-                "@{ yes. @}."
+                "{ yes. }."
         });
         auto t = tokens.begin();
         auto ast = read_tiled_block(t, tokens.end());
@@ -82,7 +82,7 @@ TEST(ParseTiled, ReadBlock)
 TEST(ParseTiled, TreePa)
 {
         vector<Token> tokens = tokenize({
-                "@d v $2 k @{ @}."
+                "@d v $2 k { }."
         });
         auto ast = parse_primeval_ast(tokens);
         std::ofstream of;
