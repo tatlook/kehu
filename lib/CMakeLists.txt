@@ -16,6 +16,7 @@
 
 add_library(
         kehu-lib
+        location.cpp
         token.cpp
         tokenize.cpp
         ast.cpp

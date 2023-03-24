@@ -20,23 +20,23 @@
 #include <kehu/token.h>
 
 using namespace kehu::token;
+using kehu::diagnostic::location;
 
 TEST(Token, OperatorEquals)
 {
         Token t1 = {
-                .linec = 0,
                 .type = TOKEN_CHAR,
                 .value = '"',
         };
         Token t2 = {
-                .linec = 0,
+                .loaction = location::somewhere,
                 .type = TOKEN_CHAR,
                 .value = '"',
         };
         ASSERT_TRUE(t1 == t2);
         ASSERT_FALSE(t1 != t2);
         t2 = {
-                .linec = 0,
+                .loaction = location::somewhere,
                 .type = TOKEN_STRING,
                 .value = "\"",
         };
@@ -47,38 +47,38 @@ TEST(Token, OperatorEquals)
 TEST(Token, ToString)
 {
         Token t = {
-                .linec = 0,
+                .loaction = location::somewhere,
                 .type = TOKEN_INTEGER,
                 .value = '"',
         };
         ASSERT_THROW(to_string(t),
                         std::bad_variant_access);
         t = {
-                .linec = 0,
+                .loaction = location::somewhere,
                 .type = TOKEN_CHAR,
                 .value = '"',
         };
         ASSERT_EQ(to_string(t), "'\"'");
         t = {
-                .linec = 0,
+                .loaction = location::somewhere,
                 .type = TOKEN_STRING,
                 .value = "voi saatana",
         };
         ASSERT_EQ(to_string(t), "\"voi saatana\"");
         t = {
-                .linec = 0,
+                .loaction = location::somewhere,
                 .type = TOKEN_IDENTIFIER,
                 .value = "voi saatana",
         };
         ASSERT_EQ(to_string(t), "voi saatana");
         t = {
-                .linec = 0,
+                .loaction = location::somewhere,
                 .type = TOKEN_INTEGER,
                 .value = 3000L,
         };
         ASSERT_EQ(to_string(t), "3000");
         t = {
-                .linec = 0,
+                .loaction = location::somewhere,
                 .type = TOKEN_SYMBOL,
                 .value = ',',
         };

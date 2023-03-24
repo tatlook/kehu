@@ -24,6 +24,8 @@
 #include <variant>
 #include <stdexcept>
 
+#include "diagnostic.h"
+
 namespace kehu::token
 {
 
@@ -39,7 +41,7 @@ enum token_type
 
 struct Token
 {
-        int linec; /* where do token found */
+        diagnostic::location loaction;
         enum token_type type;
         std::variant<double, signed long, std::string, char> value;
         bool operator==(const Token &t2) const;

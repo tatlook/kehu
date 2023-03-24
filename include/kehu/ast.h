@@ -26,6 +26,7 @@
 #include <memory>
 
 #include "token.h"
+#include "diagnostic.h"
 
 namespace kehu::ast
 {
@@ -35,6 +36,12 @@ namespace kehu::ast
  */
 struct syntax_node
 {
+        /**
+         * @brief Where this sytax node is
+         * From first token to last token.
+         */
+        diagnostic::location location;
+
         /**
          * @brief Generates kehu code.
          * The code is not strictly human-readle.
