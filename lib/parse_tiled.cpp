@@ -26,6 +26,7 @@ namespace kehu::ast
 {
 
 using namespace token;
+using kehu::diagnostic::location;
 using std::string;
 using std::vector;
 
@@ -48,6 +49,7 @@ static std::shared_ptr<value_node> read_raw_char(vector<Token>::const_iterator &
                 throw syntax_error("incomprehensible token", *t);
         auto rawvalue = std::make_shared<raw_char_node>();
         rawvalue->value = std::get<char>(t->value);
+        rawvalue->location = t->location;
         ++t;
         return rawvalue;
 }
@@ -59,6 +61,7 @@ static std::shared_ptr<value_node> read_raw_string(vector<Token>::const_iterator
                 throw read_raw_char(t, end);
         auto rawvalue = std::make_shared<raw_string_node>();
         rawvalue->value = std::get<std::string>(t->value);
+        rawvalue->location = t->location;
         ++t;
         return rawvalue;
 }
@@ -70,6 +73,7 @@ static std::shared_ptr<value_node> read_raw_integer(vector<Token>::const_iterato
                 return read_raw_string(t, end);
         auto rawvalue = std::make_shared<raw_integer_node>();
         rawvalue->value = std::get<signed long>(t->value);
+        rawvalue->location = t->location;
         ++t;
         return rawvalue;
 }
@@ -81,6 +85,7 @@ static std::shared_ptr<value_node> read_word(vector<Token>::const_iterator &t,
                 return read_raw_integer(t, end);
         auto word = std::make_shared<word_node>();
         word->word = std::get<string>(t->value);
+        word->location = t->location;
         ++t;
         return word;
 }
@@ -104,6 +109,7 @@ static std::shared_ptr<value_node> read_type(vector<Token>::const_iterator &t,
                 return read_word(t, end);
         auto type = std::make_shared<type_node>();
         type->name = std::get<string>(t->value);
+        type->location = t->location;
         ++t;
         return type;
 }
@@ -115,6 +121,7 @@ static std::shared_ptr<value_node> read_variable(vector<Token>::const_iterator &
                 return read_type(t, end);
         auto var = std::make_shared<variable_reference_node>();
         var->name = std::get<string>(t->value);
+        var->location = t->location;
         ++t;
         return var;
 }
@@ -128,6 +135,7 @@ static std::shared_ptr<value_node> read_tiled_block(vector<Token>::const_iterato
 {
         if (*t != "{") 
                 return read_variable(t, end);
+        location begin = t->location;
         ++t;
         auto block = std::make_shared<tiled_block_node>();
         while (true) {
@@ -141,6 +149,7 @@ static std::shared_ptr<value_node> read_tiled_block(vector<Token>::const_iterato
                         break;
                 block->statements.push_back(read_tiled_statement(t, end));
         }
+        block->location = t->location + begin;
         ++t;
         return block;
 }
@@ -150,6 +159,7 @@ static std::shared_ptr<tiled_statement_node> read_tiled_statement(
                 const vector<Token>::const_iterator &end)
 {
         auto primeval = std::make_shared<tiled_statement_node>();
+        location begin = t->location;
         while (true) {
                 if (t == end)
                         throw syntax_error("unexpected ending", t[-1]);
@@ -158,6 +168,7 @@ static std::shared_ptr<tiled_statement_node> read_tiled_statement(
                 auto value_node = read_tiled_block(t, end);
                 primeval->lex.push_back(value_node);
         }
+        primeval->location = t->location + begin;
         ++t;
         return primeval;
 }

@@ -41,7 +41,7 @@ enum token_type
 
 struct Token
 {
-        diagnostic::location loaction;
+        diagnostic::location location;
         enum token_type type;
         std::variant<double, signed long, std::string, char> value;
         bool operator==(const Token &t2) const;

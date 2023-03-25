@@ -186,10 +186,10 @@ static std::vector<Token> tokenize_line(int linec, const std::string &line)
                 try {
                         auto begin_char = c;
                         Token token = read_token_after_spaces(c, line.end());
-                        token.loaction.first_linec = linec;
-                        token.loaction.first_charc = begin_char - line.begin();
-                        token.loaction.last_linec = linec;
-                        token.loaction.last_charc = c - line.begin();
+                        token.location.first_linec = linec;
+                        token.location.first_charc = begin_char - line.begin();
+                        token.location.last_linec = linec;
+                        token.location.last_charc = c - line.begin();
                         line_tokens.push_back(token);
                 } catch (string_eof) {
                         break;

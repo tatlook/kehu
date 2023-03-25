@@ -74,7 +74,7 @@ int main(int argc, char const *argv[])
                 return errno;
         }
         for (const token::Token &t : tokens) {
-                target << t << " " << t.loaction.first_linec << std::endl;
+                target << t << " " << t.location.first_linec << std::endl;
         }
 
         std::shared_ptr<ast::tiled_block_node> ast;
@@ -82,8 +82,8 @@ int main(int argc, char const *argv[])
                 ast = ast::parse_primeval_ast(tokens);
         } catch (ast::syntax_error &e) {
                 token::Token t = e.get_error_token();
-                assert(t.loaction.first_linec > 0);
-                std::cerr << t.loaction << e.what() << std::endl
+                assert(t.location.first_linec > 0);
+                std::cerr << t.location << e.what() << std::endl
                         << "\t" << (int) t.type << t << std::endl;
                 return 1;
         }

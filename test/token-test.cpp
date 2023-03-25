@@ -29,14 +29,14 @@ TEST(Token, OperatorEquals)
                 .value = '"',
         };
         Token t2 = {
-                .loaction = location::somewhere,
+                .location = location::somewhere,
                 .type = TOKEN_CHAR,
                 .value = '"',
         };
         ASSERT_TRUE(t1 == t2);
         ASSERT_FALSE(t1 != t2);
         t2 = {
-                .loaction = location::somewhere,
+                .location = location::somewhere,
                 .type = TOKEN_STRING,
                 .value = "\"",
         };
@@ -47,38 +47,38 @@ TEST(Token, OperatorEquals)
 TEST(Token, ToString)
 {
         Token t = {
-                .loaction = location::somewhere,
+                .location = location::somewhere,
                 .type = TOKEN_INTEGER,
                 .value = '"',
         };
         ASSERT_THROW(to_string(t),
                         std::bad_variant_access);
         t = {
-                .loaction = location::somewhere,
+                .location = location::somewhere,
                 .type = TOKEN_CHAR,
                 .value = '"',
         };
         ASSERT_EQ(to_string(t), "'\"'");
         t = {
-                .loaction = location::somewhere,
+                .location = location::somewhere,
                 .type = TOKEN_STRING,
                 .value = "voi saatana",
         };
         ASSERT_EQ(to_string(t), "\"voi saatana\"");
         t = {
-                .loaction = location::somewhere,
+                .location = location::somewhere,
                 .type = TOKEN_IDENTIFIER,
                 .value = "voi saatana",
         };
         ASSERT_EQ(to_string(t), "voi saatana");
         t = {
-                .loaction = location::somewhere,
+                .location = location::somewhere,
                 .type = TOKEN_INTEGER,
                 .value = 3000L,
         };
         ASSERT_EQ(to_string(t), "3000");
         t = {
-                .loaction = location::somewhere,
+                .location = location::somewhere,
                 .type = TOKEN_SYMBOL,
                 .value = ',',
         };
