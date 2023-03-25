@@ -133,8 +133,10 @@ static std::shared_ptr<value_node> read_tiled_block(vector<Token>::const_iterato
         while (true) {
                 if (t == end)
                         throw syntax_error("unexpected ending", t[-1]);
-                if (*t == '.')
+                if (*t == '.') {
+                        ++t;
                         continue;
+                }
                 if (*t == "}")
                         break;
                 block->statements.push_back(read_tiled_statement(t, end));
