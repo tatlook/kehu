@@ -82,15 +82,45 @@ struct location
 
 std::ostream &operator<<(std::ostream &out, const location &loc);
 
+template <typename T_locatable>
+inline location locate(const T_locatable &loc)
+{
+        return loc.location;
+}
+
+/**
+ * @brief A message 
+ * 
+ * @author Zhen You Zhe
+ * 
+ * @see report
+ */
 class diagnostic_message
 {
         std::string message;
         location location;
-public:
-        diagnostic_message(/* args */);
-        ~diagnostic_message();
+
+        template <typename T_locatable>
+        explicit diagnostic_message(const std::string &message,
+                        const T_locatable &loc)
+                : message(message), location(locate(loc))
+        {}
+
+        friend std::ostream &operator<<(std::ostream &out,
+                        const diagnostic_message &message);
+
+        template <typename T_locatable>
+        friend void report(const std::string &message, const T_locatable &loc);
+
+        template <typename T_locatable>
+        friend diagnostic::location locate(const T_locatable &loc);
 };
 
+template <typename T_locatable>
+inline void report(const std::string &message, const T_locatable &loc)
+{
+        throw diagnostic_message(message, loc);
+}
 
 } // namespace kehu::diagnostic
 

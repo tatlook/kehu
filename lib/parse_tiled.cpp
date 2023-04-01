@@ -46,7 +46,7 @@ static std::shared_ptr<value_node> read_raw_char(vector<Token>::const_iterator &
                 const vector<Token>::const_iterator &end)
 {
         if (t->type != TOKEN_CHAR)
-                throw syntax_error("incomprehensible token", *t);
+                diagnostic::report("incomprehensible token", *t);
         auto rawvalue = std::make_shared<raw_char_node>();
         rawvalue->value = std::get<char>(t->value);
         rawvalue->location = t->location;
@@ -140,7 +140,7 @@ static std::shared_ptr<value_node> read_tiled_block(vector<Token>::const_iterato
         auto block = std::make_shared<tiled_block_node>();
         while (true) {
                 if (t == end)
-                        throw syntax_error("unexpected ending", t[-1]);
+                        diagnostic::report("unexpected ending", t[-1]);
                 if (*t == '.') {
                         ++t;
                         continue;
@@ -162,7 +162,7 @@ static std::shared_ptr<tiled_statement_node> read_tiled_statement(
         location begin = t->location;
         while (true) {
                 if (t == end)
-                        throw syntax_error("unexpected ending", t[-1]);
+                        diagnostic::report("unexpected ending", t[-1]);
                 if (*t == '.')
                         break;
                 auto value_node = read_tiled_block(t, end);

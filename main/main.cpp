@@ -80,11 +80,8 @@ int main(int argc, char const *argv[])
         std::shared_ptr<ast::tiled_block_node> ast;
         try {
                 ast = ast::parse_primeval_ast(tokens);
-        } catch (ast::syntax_error &e) {
-                token::Token t = e.get_error_token();
-                assert(t.location.first_linec > 0);
-                std::cerr << t.location << e.what() << std::endl
-                        << "\t" << (int) t.type << t << std::endl;
+        } catch (diagnostic::diagnostic_message &e) {
+                std::cerr << e << std::endl;
                 return 1;
         }
         target << ast->generate_kehu_code() << std::flush;

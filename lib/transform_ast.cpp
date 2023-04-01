@@ -26,10 +26,13 @@ static bool match_firsts_of_lex(const std::shared_ptr<tiled_statement_node> node
 {
         if (node->lex.size() < lex.size())
                 return false;
-        auto l = lex.begin();
-        for (int i = 0; i < node->lex.size(); i++, ++l) {
-                if (node->lex[i]->generate_kehu_code() != *l)
+        auto cmpl = lex.begin();
+        auto nodel = node->lex.begin();
+        while (cmpl != lex.end()) {
+                if ((*nodel)->generate_kehu_code() != *cmpl)
                         return false;
+                ++cmpl;
+                ++nodel;
         }
         return true;
 }
@@ -59,13 +62,13 @@ static std::shared_ptr<definition_node> transform_global_variable_definition(
                 const std::shared_ptr<tiled_statement_node> node)
 {
         if ( ! match_firsts_of_lex(node, { "define", "variable" }))
-                throw syntax_error("of piru"); // TODO
+                diagnostic::report("of piru", *node); // TODO
         if (node->lex.size() < 4
                         || typeid(*node->lex[2])
                         != typeid(type_node)
                         || typeid(*node->lex[3])
                         != typeid(variable_reference_node))
-                throw syntax_error("expected variable name");
+                diagnostic::report("expected variable name", *node);
         auto var = std::make_shared<variable_definition_node>();
         var->type = std::static_pointer_cast<type_node>(node->lex[2]);
         var->variable = std::static_pointer_cast
@@ -78,16 +81,14 @@ static std::shared_ptr<definition_node> transform_function_definition(
 {
         if ( ! match_firsts_of_lex(node, { "define", "function" }))
                 return transform_global_variable_definition(node);
-        if (typeid(node->lex.back()) != typeid(tiled_block_node))
-                throw syntax_error("missing function body");
-
         auto fn = std::make_shared<function_definition_node>();
-        
-        auto &&l = node->lex.begin();
+        auto l = node->lex.begin();
         l += 2;
         for ( ; l != (node->lex.end() - 1); ++l) {
                 fn->lex.push_back(*l); // TODO: parameter and type not word
         }
+        if (typeid(node->lex.back()) != typeid(tiled_block_node))
+                diagnostic::report("missing function body", *node);
         fn->block = transform_executable_block(
                 std::static_pointer_cast<tiled_block_node>(node->lex.back()));
         return fn;

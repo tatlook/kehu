@@ -158,24 +158,6 @@ struct tiled_statement_node : statement_node
  */
 std::shared_ptr<tiled_block_node> parse_primeval_ast(const std::vector<token::Token> &tokens);
 
-class syntax_error : public std::runtime_error
-{
-        const token::Token error_token;
-public:
-        explicit syntax_error(const std::string &message)
-                        : std::runtime_error(message), error_token({.linec = 0})
-        {}
-
-        explicit syntax_error(const std::string &message, token::Token t) 
-                        : std::runtime_error(message), error_token(t)
-        {}
-
-        const token::Token &get_error_token() const noexcept
-        {
-                return error_token;
-        }
-};
-
 struct executable_statement_node : tiled_statement_node
 {
 };

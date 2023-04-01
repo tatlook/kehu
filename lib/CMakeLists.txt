@@ -22,6 +22,7 @@ add_library(
         ast.cpp
         parse_tiled.cpp
         transform_ast.cpp
+        diagnostic.cpp
 )
 
 target_include_directories(kehu-lib PRIVATE ../include)
