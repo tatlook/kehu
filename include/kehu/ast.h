@@ -199,7 +199,7 @@ struct compile_unit_node : definition_block_node
 };
 
 std::shared_ptr<compile_unit_node> transform_ast(
-                const std::shared_ptr<tiled_block_node> root_node);
+                std::shared_ptr<const tiled_block_node> root_node);
 
 } // namespace kehu::ast
 

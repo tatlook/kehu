@@ -21,7 +21,7 @@
 namespace kehu::ast
 {
 
-static bool match_firsts_of_lex(const std::shared_ptr<tiled_statement_node> node,
+static bool match_firsts_of_lex(std::shared_ptr<const tiled_statement_node> node,
                 std::initializer_list<std::string> lex)
 {
         if (node->lex.size() < lex.size())
@@ -38,7 +38,7 @@ static bool match_firsts_of_lex(const std::shared_ptr<tiled_statement_node> node
 }
 
 static std::shared_ptr<executable_statement_node> transform_executable_statement(
-                const std::shared_ptr<tiled_statement_node> node)
+                std::shared_ptr<const tiled_statement_node> node)
 {
         auto st = std::make_shared<executable_statement_node>();
 
@@ -48,7 +48,7 @@ static std::shared_ptr<executable_statement_node> transform_executable_statement
 }
 
 static std::shared_ptr<executable_block_node> transform_executable_block(
-                const std::shared_ptr<tiled_block_node> node)
+                std::shared_ptr<const tiled_block_node> node)
 {
         auto exb = std::make_shared<executable_block_node>();
         for (auto st1 : node->statements) {
@@ -59,7 +59,7 @@ static std::shared_ptr<executable_block_node> transform_executable_block(
 }
 
 static std::shared_ptr<definition_node> transform_global_variable_definition(
-                const std::shared_ptr<tiled_statement_node> node)
+                std::shared_ptr<const tiled_statement_node> node)
 {
         if ( ! match_firsts_of_lex(node, { "define", "variable" }))
                 diagnostic::report("of piru", *node); // TODO
@@ -77,7 +77,7 @@ static std::shared_ptr<definition_node> transform_global_variable_definition(
 }
 
 static std::shared_ptr<definition_node> transform_function_definition(
-                const std::shared_ptr<tiled_statement_node> node)
+                std::shared_ptr<const tiled_statement_node> node)
 {
         if ( ! match_firsts_of_lex(node, { "define", "function" }))
                 return transform_global_variable_definition(node);
@@ -95,13 +95,13 @@ static std::shared_ptr<definition_node> transform_function_definition(
 }
 
 static std::shared_ptr<definition_node> transform_global_definition(
-                const std::shared_ptr<tiled_statement_node> st)
+                std::shared_ptr<const tiled_statement_node> st)
 {
         return transform_function_definition(st);
 }
 
 static std::shared_ptr<compile_unit_node> transform_compile_unit(
-                const std::shared_ptr<tiled_block_node> root)
+                std::shared_ptr<const tiled_block_node> root)
 {
         auto cu = std::make_shared<compile_unit_node>();
         for (const auto node : root->statements) {
@@ -111,7 +111,7 @@ static std::shared_ptr<compile_unit_node> transform_compile_unit(
 }
 
 std::shared_ptr<compile_unit_node> transform_ast(
-                const std::shared_ptr<tiled_block_node> syntax_node)
+                std::shared_ptr<const tiled_block_node> syntax_node)
 {
         return transform_compile_unit(syntax_node);
 }
