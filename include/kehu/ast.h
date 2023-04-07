@@ -69,22 +69,60 @@ struct syntax_node
 
 struct value_node : syntax_node
 {
+        virtual bool is_expression() const
+        {
+                return false;
+        }
+
+        virtual bool is_word() const
+        {
+                return false;
+        }
+
+        virtual bool is_block() const
+        {
+                return false;
+        }
+
+        virtual bool is_variable() const
+        {
+                return false;
+        }
+
+        virtual bool is_type() const
+        {
+                return false;
+        }
 };
 
 struct expression_node : value_node
 {
+        bool is_expression() const final override
+        {
+                return true;
+        }
 };
 
 struct type_node : value_node
 {
         std::string name;
         std::string generate_kehu_code() const override;
+
+        bool is_type() const final override
+        {
+                return true;
+        }
 };
 
 struct variable_reference_node : expression_node
 {
         std::string name;
         std::string generate_kehu_code() const override;
+
+        bool is_variable() const final override
+        {
+                return true;
+        }
 };
 
 struct raw_char_node : expression_node
@@ -109,6 +147,11 @@ struct word_node : value_node
 {
         std::string word;
         std::string generate_kehu_code() const override;
+
+        bool is_word() const final override
+        {
+                return true;
+        }
 };
 
 struct statement_node : syntax_node
@@ -125,8 +168,15 @@ struct block_node : value_node
 {
         std::vector<std::shared_ptr<T>> statements;
         std::string generate_kehu_code() const override;
+
+        bool is_block() const final override
+        {
+                return true;
+        }
+
 private:
-        inline void __test_have_member() {
+        inline void __test_have_member()
+        {
                 std::string (T::*__test)() const = T::generate_kehu_code;
         };
 };

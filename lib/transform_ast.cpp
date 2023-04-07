@@ -1,4 +1,4 @@
-/* 
+/*
  * Kehu - a toe language
  * Copyright (C) 2023 Zhen You Zhe
  *
@@ -64,10 +64,8 @@ static std::shared_ptr<definition_node> transform_global_variable_definition(
         if ( ! match_firsts_of_lex(node, { "define", "variable" }))
                 diagnostic::report("of piru", *node); // TODO
         if (node->lex.size() < 4
-                        || typeid(*node->lex[2])
-                        != typeid(type_node)
-                        || typeid(*node->lex[3])
-                        != typeid(variable_reference_node))
+                        || ( ! node->lex[2]->is_type())
+                        || ( ! node->lex[3]->is_variable()))
                 diagnostic::report("expected variable name", *node);
         auto var = std::make_shared<variable_definition_node>();
         var->type = std::static_pointer_cast<type_node>(node->lex[2]);
@@ -87,7 +85,7 @@ static std::shared_ptr<definition_node> transform_function_definition(
         for ( ; l != (node->lex.end() - 1); ++l) {
                 fn->lex.push_back(*l); // TODO: parameter and type not word
         }
-        if (typeid(node->lex.back()) != typeid(tiled_block_node))
+        if ( ! node->lex.back()->is_block())
                 diagnostic::report("missing function body", *node);
         fn->block = transform_executable_block(
                 std::static_pointer_cast<tiled_block_node>(node->lex.back()));
