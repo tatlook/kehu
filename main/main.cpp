@@ -16,7 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #include <stdlib.h>
 #include <iostream>
 #include <fstream>
@@ -26,6 +25,7 @@
 
 #include <kehu/ast.h>
 #include <kehu/token.h>
+#include <kehu/build_ir.h>
 
 using namespace kehu;
 using std::vector;
@@ -42,56 +42,58 @@ vector<string> read_source(std::istream &source)
         return lines;
 }
 
-int main(int argc, char const *argv[])
+int main( int argc , char const * argv [ ] )
 {
-        if (argc < 3) {
-                std::cout << "Kehu - a toe language" << std::endl
-                        << "Copyright (C) 2023 Zhen You Zhe" << std::endl
-                        << "Usage: " << argv[0] << " [source] [target]" << std::endl;
-                return 0;
+        if ( argc < 3 ) {
+                std::cout << "Kehu - a toe language" << std :: endl
+                        << "Copyright (C) 2023 Zhen You Zhe" << std :: endl
+                        << "Usage: " << argv [ 0 ] << " [source] [target]" << std :: endl ;
+                return 0 ;
         }
-        std::ifstream source;
-        source.open(argv[1]);
+        std :: ifstream source ;
+        source . open ( argv [ 1 ] ) ;
 
         if ( ! source) {
-                perror(argv[1]);
-                return errno;
+                perror ( argv [ 1 ] ) ;
+                return errno ;
         }
-        std::vector<token::Token> tokens;
+        std :: vector < token :: Token > tokens ;
         try {
-                tokens = token::tokenize(read_source(source));
-        } catch (const token::token_exception &e) {
-                std::cerr << e.what() << '\n';
-                return 1;
+                tokens = token :: tokenize ( read_source ( source ) ) ;
+        } catch ( diagnostic :: diagnostic_message & e ) {
+                std :: cerr << e << std :: endl ;
+                return 1 ;
         }
         
 
-        std::ofstream target;
-        target.open(argv[2]);
+        std :: ofstream target ;
+        target . open ( argv [ 2 ] ) ;
 
-        if ( ! target) {
-                perror(argv[0]);
-                return errno;
-        }
-        for (const token::Token &t : tokens) {
-                target << t << " " << t.location.first_linec << std::endl;
+        if ( ! target ) {
+                perror ( argv [ 0 ] ) ;
+                return errno ;
         }
 
-        std::shared_ptr<ast::tiled_block_node> ast;
+        for ( const token :: Token & t : tokens ) {
+                target << t << " " << t . location . first_linec << std :: endl ;
+        }
+
         try {
-                ast = ast::parse_primeval_ast(tokens);
-        } catch (diagnostic::diagnostic_message &e) {
-                std::cerr << e << std::endl;
-                return 1;
+                std :: shared_ptr < ast :: tiled_block_node > ast ;
+                ast = ast :: parse_primeval_ast ( tokens ) ;
+                target << ast -> generate_kehu_code ( ) << std :: flush ;
+
+                auto ast2 = ast :: transform_ast ( ast ) ;
+                
+                target << ast2 -> generate_kehu_code ( ) << std :: endl ;
+                std :: shared_ptr < string > ir = ir :: build_ir ( ast2 ) ;
+                target << * ir ;
+        } catch ( diagnostic :: diagnostic_message & e ) {
+                std :: cerr << e << std :: endl ;
+                return 1 ;
         }
-        target << ast->generate_kehu_code() << std::flush;
+        target . close ( ) ;
 
-        auto ast2 = ast::transform_ast(ast);
-        
-        target << ast2->generate_kehu_code();
-
-        target.close();
-
-        return 0;
+        return 0 ;
 }
 
