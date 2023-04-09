@@ -20,6 +20,8 @@ find_package(GTest)
 add_executable(
         kehu-test
         test-main.cpp
+        location-test.cpp
+        token-test.cpp
         tokenizer-test.cpp
         treeparser-test.cpp
 )

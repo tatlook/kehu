@@ -32,29 +32,29 @@ std::string tiled_statement_node::generate_kehu_code() const
         return code;
 }
 
+std::string type_node::generate_kehu_code() const
+{
+        return name;
+}
+
 std::string variable_reference_node::generate_kehu_code() const
 {
         return name;
 }
 
-std::string raw_char_value_node::generate_kehu_code() const
+std::string raw_char_node::generate_kehu_code() const
 {
         return std::string("'") + value + '\'';
 }
 
-std::string raw_string_value_node::generate_kehu_code() const
+std::string raw_string_node::generate_kehu_code() const
 {
         return '"' + value + '"';
 }
 
-std::string raw_integer_value_node::generate_kehu_code() const
+std::string raw_integer_node::generate_kehu_code() const
 {
         return std::to_string(value);
-}
-
-std::string function_call_node::generate_kehu_code() const
-{
-        return std::string(); // FIXME
 }
 
 std::string word_node::generate_kehu_code() const
@@ -62,38 +62,46 @@ std::string word_node::generate_kehu_code() const
         return word;
 }
 
-std::string expression_statement_node::generate_kehu_code() const
+template <typename T>
+std::string block_node<T>::generate_kehu_code() const
 {
         std::string code;
-        code += expression->generate_kehu_code();
-        code += '.';
-        return code;
-}
-
-std::string block_node::generate_kehu_code() const
-{
-        std::string code;
-        code += "@{\n";
+        code += "{\n";
         for (const auto &st : statements) {
                 code += st->generate_kehu_code();
                 code += '\n';
         }
-        code += "@}";
+        code += "}";
         return code;
+}
+
+std::string variable_definition_node::generate_kehu_code() const
+{
+        std::string code;
+        code += "define variable";
+        code += '\n';
+        code += variable->generate_kehu_code();
+        code += '.';
+        return code;
+}
+
+std::string executable_block_node::generate_kehu_code() const
+{
+        return block_node<executable_statement_node>::generate_kehu_code();
 }
 
 std::string function_definition_node::generate_kehu_code() const
 {
-        return std::string();
-}
-
-std::string file_node::generate_kehu_code() const
-{
         std::string code;
-        for (const auto &st : global_definitions) {
-                code += st->generate_kehu_code();
-                code += '\n';
+        code += "define function";
+        code += '\n';
+        for (const auto &l : this->lex) {
+                code += l->generate_kehu_code();
+                code += ' ';
         }
+        code += '\n';
+        code += block->generate_kehu_code();
+        code += '.';
         return code;
 }
 

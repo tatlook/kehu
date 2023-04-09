@@ -24,6 +24,19 @@
 using namespace kehu::ast;
 using namespace kehu::token;
 
+TEST(ParseTiled, ReadType)
+{
+        const vector<Token> tokens = tokenize({
+                "%type-name+yes"
+        });
+        auto t = tokens.begin();
+        auto ast = read_type(t, tokens.end());
+        ASSERT_EQ(typeid(*ast), typeid(type_node));
+        auto string = std::static_pointer_cast<type_node>(ast);
+        ASSERT_EQ(string->name, "%type-name+yes");
+        ASSERT_EQ(string->generate_kehu_code(), "%type-name+yes");
+}
+
 TEST(ParseTiled, ReadRawString)
 {
         const vector<Token> tokens = tokenize({
@@ -31,8 +44,8 @@ TEST(ParseTiled, ReadRawString)
         });
         auto t = tokens.begin();
         auto ast = read_raw_string(t, tokens.end());
-        ASSERT_EQ(typeid(*ast), typeid(raw_string_value_node));
-        raw_string_value_node *string = static_cast<raw_string_value_node *>(ast.release());
+        ASSERT_EQ(typeid(*ast), typeid(raw_string_node));
+        auto string = std::static_pointer_cast<raw_string_node>(ast);
         ASSERT_EQ(string->value, "yes");
 }
 
@@ -51,12 +64,12 @@ TEST(ParseTiled, ReadStatment)
 TEST(ParseTiled, ReadBlock)
 {
         const vector<Token> tokens = tokenize({
-                "@{ yes. @}."
+                "{ yes. }."
         });
         auto t = tokens.begin();
-        auto ast = read_block(t, tokens.end());
-        ASSERT_EQ(typeid(*ast), typeid(block_node));
-        block_node *block = static_cast<block_node *>(ast.release());
+        auto ast = read_tiled_block(t, tokens.end());
+        ASSERT_EQ(typeid(*ast), typeid(tiled_block_node));
+        auto block = std::static_pointer_cast<tiled_block_node>(ast);
         ASSERT_EQ(block->statements.size(), 1);
         const vector<Token> statement_tokens = tokenize({
                 "yes."
@@ -69,9 +82,9 @@ TEST(ParseTiled, ReadBlock)
 TEST(ParseTiled, TreePa)
 {
         vector<Token> tokens = tokenize({
-                "@d v $2 k @{ @}."
+                "@d v $2 k { }."
         });
-        std::unique_ptr<kehu::ast::syntax_node> ast = parse_primeval_ast(tokens);
+        auto ast = parse_primeval_ast(tokens);
         std::ofstream of;
         of.open("k.ll");
         of << ast->generate_kehu_code();

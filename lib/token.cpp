@@ -26,7 +26,7 @@ namespace kehu::token
 
 bool Token::operator==(const Token &t2) const
 {
-        if (t2.linec != this->linec)
+        if (t2.location != this->location)
                 return false;
         if (t2.type != this->type)
                 return false;

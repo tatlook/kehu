@@ -22,6 +22,8 @@
 #include <token.cpp>
 
 using namespace kehu::token;
+using kehu::diagnostic::location;
+
 using std::string;
 using std::vector;
 
@@ -108,37 +110,37 @@ TEST(TokenizerTest, LineTokens)
         string line = "voi saatana 88, 6   $kk @inline ";
         vector<Token> expect;
         expect.push_back({
-                .linec = 0,
+                .location = location::somewhere,
                 .type = TOKEN_IDENTIFIER,
                 .value = "voi"
         });
         expect.push_back({
-                .linec = 0,
+                .location = location::somewhere,
                 .type = TOKEN_IDENTIFIER,
                 .value = "saatana"
         });
         expect.push_back({
-                .linec = 0,
+                .location = location::somewhere,
                 .type = TOKEN_INTEGER,
                 .value = 88L
         });
         expect.push_back({
-                .linec = 0,
+                .location = location::somewhere,
                 .type = TOKEN_SYMBOL,
                 .value = ','
         });
         expect.push_back({
-                .linec = 0,
+                .location = location::somewhere,
                 .type = TOKEN_INTEGER,
                 .value = 6L
         });
         expect.push_back({
-                .linec = 0,
+                .location = location::somewhere,
                 .type = TOKEN_IDENTIFIER,
                 .value = "$kk"
         });
         expect.push_back({
-                .linec = 0,
+                .location = location::somewhere,
                 .type = TOKEN_IDENTIFIER,
                 .value = "@inline"
         });

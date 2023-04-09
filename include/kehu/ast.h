@@ -16,8 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined(_SYNTAX_TREE_H)
-#define _SYNTAX_TREE_H
+#if !defined(_KEHU_AST_H)
+#define _KEHU_AST_H
 
 #include <vector>
 #include <string>
@@ -26,6 +26,7 @@
 #include <memory>
 
 #include "token.h"
+#include "diagnostic.h"
 
 namespace kehu::ast
 {
@@ -35,6 +36,12 @@ namespace kehu::ast
  */
 struct syntax_node
 {
+        /**
+         * @brief Where this sytax node is
+         * From first token to last token.
+         */
+        diagnostic::location location;
+
         /**
          * @brief Generates kehu code.
          * The code is not strictly human-readle.
@@ -62,27 +69,75 @@ struct syntax_node
 
 struct value_node : syntax_node
 {
+        virtual bool is_expression() const
+        {
+                return false;
+        }
+
+        virtual bool is_word() const
+        {
+                return false;
+        }
+
+        virtual bool is_block() const
+        {
+                return false;
+        }
+
+        virtual bool is_variable() const
+        {
+                return false;
+        }
+
+        virtual bool is_type() const
+        {
+                return false;
+        }
 };
 
-struct variable_reference_node : value_node
+struct expression_node : value_node
+{
+        bool is_expression() const final override
+        {
+                return true;
+        }
+};
+
+struct type_node : value_node
 {
         std::string name;
         std::string generate_kehu_code() const override;
+
+        bool is_type() const final override
+        {
+                return true;
+        }
 };
 
-struct raw_char_value_node : value_node
+struct variable_reference_node : expression_node
+{
+        std::string name;
+        std::string generate_kehu_code() const override;
+
+        bool is_variable() const final override
+        {
+                return true;
+        }
+};
+
+struct raw_char_node : expression_node
 {
         char value;
         std::string generate_kehu_code() const override;
 };
 
-struct raw_string_value_node : value_node
+struct raw_string_node : expression_node
 {
         std::string value;
         std::string generate_kehu_code() const override;
 };
 
-struct raw_integer_value_node : value_node
+struct raw_integer_node : expression_node
 {
         signed long value;
         std::string generate_kehu_code() const override;
@@ -92,44 +147,45 @@ struct word_node : value_node
 {
         std::string word;
         std::string generate_kehu_code() const override;
-};
 
-struct function_call_node : value_node
-{
-        std::string generate_kehu_code() const override;
+        bool is_word() const final override
+        {
+                return true;
+        }
 };
 
 struct statement_node : syntax_node
 {
 };
 
-struct expression_statement_node : statement_node
-{
-        std::unique_ptr<value_node> expression;
-        std::string generate_kehu_code() const override;
-};
-
+/**
+ * 
+ * @brief 
+ * @tparam T a statement_node
+ */
+template <typename T>
 struct block_node : value_node
 {
-        std::vector<std::unique_ptr<statement_node>> statements;
+        std::vector<std::shared_ptr<T>> statements;
         std::string generate_kehu_code() const override;
+
+        bool is_block() const final override
+        {
+                return true;
+        }
+
+private:
+        inline void __test_have_member()
+        {
+                std::string (T::*__test)() const = T::generate_kehu_code;
+        };
 };
 
+struct tiled_statement_node;
+template class block_node<tiled_statement_node>;
 
-struct function_definition_node : syntax_node
+struct tiled_block_node : block_node<tiled_statement_node>
 {
-        std::vector<std::unique_ptr<variable_reference_node>> lex;
-        std::unique_ptr<block_node> block;
-        std::string generate_kehu_code() const override;
-};
-
-/**
- * @brief 
- */
-struct file_node : syntax_node
-{
-        std::vector<std::unique_ptr<syntax_node>> global_definitions;
-        std::string generate_kehu_code() const override;
 };
 
 /**
@@ -141,7 +197,7 @@ struct file_node : syntax_node
  */
 struct tiled_statement_node : statement_node
 {
-        std::vector<std::unique_ptr<value_node>> lex;
+        std::vector<std::shared_ptr<value_node>> lex;
         std::string generate_kehu_code() const override;
 };
 
@@ -150,27 +206,69 @@ struct tiled_statement_node : statement_node
  * 
  * @author Zhen You Zhe
  */
-std::unique_ptr<syntax_node> parse_primeval_ast(const std::vector<token::Token> &tokens);
+std::shared_ptr<tiled_block_node> parse_primeval_ast(const std::vector<token::Token> &tokens);
 
-class syntax_error : public std::runtime_error
+struct executable_statement_node : tiled_statement_node
 {
-        const token::Token error_token;
-public:
-        explicit syntax_error(const std::string &message)
-                        : std::runtime_error(message), error_token({.linec = 0})
-        {}
+};
 
-        explicit syntax_error(const std::string &message, token::Token t) 
-                        : std::runtime_error(message), error_token(t)
-        {}
-
-        const token::Token &get_error_token() const noexcept
+struct definition_node : syntax_node
+{
+        virtual bool is_variable_definition() const
         {
-                return error_token;
+                return false;
+        }
+
+        virtual bool is_function_definition() const
+        {
+                return false;
         }
 };
 
-}
+struct variable_definition_node : definition_node
+{
+        std::shared_ptr<type_node> type;
+        std::shared_ptr<variable_reference_node> variable;
+        std::string generate_kehu_code() const override;
 
+        bool is_variable_definition() const final override
+        {
+                return true;
+        }
+};
 
-#endif // _SYNTAX_TREE_H
+struct executable_block_node : virtual block_node<executable_statement_node>,
+                virtual expression_node
+{
+        std::string generate_kehu_code() const override;
+};
+
+struct function_definition_node : definition_node
+{
+        std::vector<std::shared_ptr<value_node>> lex;
+        std::shared_ptr<executable_block_node> block;
+        std::string generate_kehu_code() const override;
+
+        bool is_function_definition() const final override
+        {
+                return true;
+        }
+};
+
+struct definition_block_node : block_node<definition_node>
+{
+
+};
+
+template class block_node<definition_node>;
+
+struct compile_unit_node : definition_block_node
+{
+};
+
+std::shared_ptr<compile_unit_node> transform_ast(
+                std::shared_ptr<const tiled_block_node> root_node);
+
+} // namespace kehu::ast
+
+#endif // _KEHU_AST_H

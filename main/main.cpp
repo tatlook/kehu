@@ -16,15 +16,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-
 #include <stdlib.h>
 #include <iostream>
 #include <fstream>
 #include <errno.h>
+#include <assert.h>
 #include <vector>
 
 #include <kehu/ast.h>
 #include <kehu/token.h>
+#include <kehu/build_ir.h>
 
 using namespace kehu;
 using std::vector;
@@ -59,8 +60,8 @@ int main(int argc, char const *argv[])
         std::vector<token::Token> tokens;
         try {
                 tokens = token::tokenize(read_source(source));
-        } catch (const token::token_exception &e) {
-                std::cerr << e.what() << '\n';
+        } catch (diagnostic::diagnostic_message &e) {
+                std::cerr << e << std::endl;
                 return 1;
         }
         
@@ -73,25 +74,23 @@ int main(int argc, char const *argv[])
                 return errno;
         }
         for (const token::Token &t : tokens) {
-                target << t << " " << t.linec << std::endl;
+                target << t << " " << t.location.first_linec << std::endl;
         }
 
-        std::unique_ptr<ast::syntax_node> ast;
         try {
-                ast.reset(ast::parse_primeval_ast(tokens).release());
-        } catch (ast::syntax_error &e) {
-                token::Token t = e.get_error_token();
-                if (t.linec != 0) {
-                        std::cerr << t.linec << ": ";
-                }
-                std::cerr << e.what();
-                if (t.linec != 0) {
-                        std::cerr << std::endl << "\t" << (int) t.type
-                                << t << std::endl;
-                }
+                std::shared_ptr<ast::tiled_block_node> ast;
+                ast = ast::parse_primeval_ast(tokens);
+                target << ast->generate_kehu_code() << std::flush;
+
+                auto ast2 = ast::transform_ast(ast);
+                
+                target << ast2->generate_kehu_code();
+                std::shared_ptr<string> ir = ir::build_ir(ast2);
+                target << *ir;
+        } catch (diagnostic::diagnostic_message &e) {
+                std::cerr << e << std::endl;
                 return 1;
         }
-        target << ast->generate_kehu_code();
         target.close();
 
         return 0;
