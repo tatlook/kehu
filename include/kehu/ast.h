@@ -214,7 +214,15 @@ struct executable_statement_node : tiled_statement_node
 
 struct definition_node : syntax_node
 {
-        
+        virtual bool is_variable_definition() const
+        {
+                return false;
+        }
+
+        virtual bool is_function_definition() const
+        {
+                return false;
+        }
 };
 
 struct variable_definition_node : definition_node
@@ -222,6 +230,11 @@ struct variable_definition_node : definition_node
         std::shared_ptr<type_node> type;
         std::shared_ptr<variable_reference_node> variable;
         std::string generate_kehu_code() const override;
+
+        bool is_variable_definition() const final override
+        {
+                return true;
+        }
 };
 
 struct executable_block_node : virtual block_node<executable_statement_node>,
@@ -235,6 +248,11 @@ struct function_definition_node : definition_node
         std::vector<std::shared_ptr<value_node>> lex;
         std::shared_ptr<executable_block_node> block;
         std::string generate_kehu_code() const override;
+
+        bool is_function_definition() const final override
+        {
+                return true;
+        }
 };
 
 struct definition_block_node : block_node<definition_node>

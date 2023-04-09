@@ -23,6 +23,7 @@ add_library(
         parse_tiled.cpp
         transform_ast.cpp
         diagnostic.cpp
+        build_ir.cpp
 )
 
 target_include_directories(kehu-lib PRIVATE ../include)
