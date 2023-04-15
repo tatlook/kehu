@@ -17,6 +17,7 @@
  */
 
 #include <kehu/ast.h>
+#include <kehu/dump.h>
 
 namespace kehu::ast
 {
@@ -29,7 +30,7 @@ static bool match_firsts_of_lex(std::shared_ptr<const tiled_statement_node> node
         auto cmpl = lex.begin();
         auto nodel = node->get_lex().begin();
         while (cmpl != lex.end()) {
-                if ((*nodel)->generate_kehu_code() != *cmpl)
+                if (dump::dump(**nodel) != *cmpl)
                         return false;
                 ++cmpl;
                 ++nodel;

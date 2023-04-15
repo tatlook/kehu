@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <kehu/dump.h>
 #include <kehu/build_ir.h>
 #include <llvm/IR/IRBuilder.h>
 
@@ -90,7 +91,7 @@ static std::string generate_function_name(
 {
         std::string name;
         for (auto l : fdef->get_lex()) {
-                name += l->generate_kehu_code();
+                name += dump::dump(*l);
                 name += " ";
         }
         return name;

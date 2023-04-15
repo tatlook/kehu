@@ -21,98 +21,74 @@
 namespace kehu::ast
 {
 
-std::string tiled_statement_node::generate_kehu_code() const
+void tiled_statement_node::accept(ast_visitor &visitor) const
 {
-        std::string code;
-        for (const auto &l : this->lex) {
-                code += l->generate_kehu_code();
-                code += ' ';
-        }
-        code += '.';
-        return code;
+        visitor.visit(*this);
 }
 
-std::string type_node::generate_kehu_code() const
+void type_node::accept(ast_visitor &visitor) const
 {
-        return name;
+        visitor.visit(*this);
 }
 
-std::string variable_node::generate_kehu_code() const
+void variable_node::accept(ast_visitor &visitor) const
 {
-        return name;
+        visitor.visit(*this);
 }
 
-std::string char_literal_node::generate_kehu_code() const
+void char_literal_node::accept(ast_visitor &visitor) const
 {
-        return std::string("'") + get_value() + '\'';
+        visitor.visit(*this);
 }
 
-std::string string_literal_node::generate_kehu_code() const
+void string_literal_node::accept(ast_visitor &visitor) const
 {
-        return '"' + get_value() + '"';
+        visitor.visit(*this);
 }
 
-std::string integer_literal_node::generate_kehu_code() const
+void integer_literal_node::accept(ast_visitor &visitor) const
 {
-        return std::to_string(get_value());
+        visitor.visit(*this);
 }
 
-std::string word_node::generate_kehu_code() const
+void word_node::accept(ast_visitor &visitor) const
 {
-        return word;
+        visitor.visit(*this);
 }
 
-template <typename T>
-std::string block_node<T>::generate_kehu_code() const
+void tiled_block_node::accept(ast_visitor &visitor) const
 {
-        std::string code;
-        code += "{\n";
-        for (const auto &st : statements) {
-                code += st->generate_kehu_code();
-                code += '\n';
-        }
-        code += "}";
-        return code;
+        visitor.visit(*this);
 }
 
-std::string executable_statement_node::generate_kehu_code() const
+void executable_statement_node::accept(ast_visitor &visitor) const
 {
-        return expression->generate_kehu_code() + ".";
+        visitor.visit(*this);
 }
 
-std::string variable_definition_node::generate_kehu_code() const
+void variable_definition_node::accept(ast_visitor &visitor) const
 {
-        std::string code;
-        code += "define variable";
-        code += '\n';
-        code += variable->generate_kehu_code();
-        code += '.';
-        return code;
+        visitor.visit(*this);
 }
 
-std::string function_definition_node::generate_kehu_code() const
+void executable_block_node::accept(ast_visitor &visitor) const
 {
-        std::string code;
-        code += "define function";
-        code += '\n';
-        for (const auto &l : this->lex) {
-                code += l->generate_kehu_code();
-                code += ' ';
-        }
-        code += '\n';
-        code += block->generate_kehu_code();
-        code += '.';
-        return code;
+        visitor.visit(*this);
 }
 
-std::string function_call_node::generate_kehu_code() const
+void function_definition_node::accept(ast_visitor &visitor) const
 {
-        std::string code;
-        for (auto l : function) {
-                code += l->generate_kehu_code();
-                code += " ";
-        }
-        return code;
+        visitor.visit(*this);
+}
+
+void function_call_node::accept(ast_visitor &visitor) const
+{
+        visitor.visit(*this);
+}
+
+void definition_block_node::accept(ast_visitor &visitor) const
+{
+        visitor.visit(*this);
 }
 
 } // namespace kehu::ast

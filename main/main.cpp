@@ -24,6 +24,7 @@
 #include <vector>
 
 #include <kehu/ast.h>
+#include <kehu/dump.h>
 #include <kehu/token.h>
 #include <kehu/build_ir.h>
 
@@ -80,11 +81,11 @@ int main(int argc, char const *argv[])
         try {
                 std::shared_ptr<ast::tiled_block_node> ast;
                 ast = ast::parse_primeval_ast(tokens);
-                target << ast->generate_kehu_code() << std::flush;
+                target << dump::dump(*ast) << std::flush;
 
                 auto ast2 = ast::transform_ast(ast);
                 
-                target << ast2->generate_kehu_code();
+                target << dump::dump(*ast2) << std::flush;
                 std::shared_ptr<string> ir = ir::build_ir(ast2);
                 target << *ir;
         } catch (diagnostic::diagnostic_message &e) {

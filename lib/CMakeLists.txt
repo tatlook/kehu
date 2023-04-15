@@ -24,6 +24,7 @@ add_library(
         transform_ast.cpp
         diagnostic.cpp
         build_ir.cpp
+        dump.cpp
 )
 
 target_include_directories(kehu-lib PRIVATE ../include)

@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <kehu/dump.h>
 #include <gtest/gtest.h>
 #include <fstream>
 #include <parse_tiled.cpp>
@@ -23,6 +24,7 @@
 
 using namespace kehu::ast;
 using namespace kehu::token;
+using namespace kehu;
 
 TEST(ParseTiled, ReadType)
 {
@@ -34,7 +36,6 @@ TEST(ParseTiled, ReadType)
         ASSERT_EQ(typeid(*ast), typeid(type_node));
         auto string = std::static_pointer_cast<type_node>(ast);
         ASSERT_EQ(string->get_name(), "%type-name+yes");
-        ASSERT_EQ(string->generate_kehu_code(), "%type-name+yes");
 }
 
 TEST(ParseTiled, ReadRawString)
@@ -87,5 +88,5 @@ TEST(ParseTiled, TreePa)
         auto ast = parse_primeval_ast(tokens);
         std::ofstream of;
         of.open("k.ll");
-        of << ast->generate_kehu_code();
+        of << dump::dump(*ast);
 }

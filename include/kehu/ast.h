@@ -28,8 +28,18 @@
 #include "token.h"
 #include "diagnostic.h"
 
+namespace kehu::dump
+{
+
+template <typename T_node>
+std::string dump(const T_node &node);
+
+}
+
 namespace kehu::ast
 {
+
+class ast_visitor;
 
 /**
  * @brief Base class of all ast nodes.
@@ -42,18 +52,12 @@ struct syntax_node
          */
         diagnostic::location location;
 
-        /**
-         * @brief Generates kehu code.
-         * The code is not strictly human-readle.
-         * 
-         * @return string of a kehu code
-         */
-        virtual std::string generate_kehu_code() const = 0;
+        virtual void accept(ast_visitor &visitor) const = 0;
 
         bool operator==(const syntax_node &other) const
         {
                 return typeid(this) == typeid(&other)
-                        && this->generate_kehu_code() == other.generate_kehu_code();
+                        && dump::dump(*this) == dump::dump(other);
         }
 
         bool operator!=(const syntax_node &other) const
@@ -63,7 +67,7 @@ struct syntax_node
 
         friend std::ostream &operator<<(std::ostream &out, const syntax_node &node)
         {
-                return out << node.generate_kehu_code();
+                return out << dump::dump(node);
         }
 };
 
@@ -116,7 +120,8 @@ public:
                 return name;
         }
         
-        std::string generate_kehu_code() const override;
+        virtual void accept(ast_visitor &visitor) const override;
+
 
         bool is_type() const final override
         {
@@ -137,7 +142,8 @@ public:
                 return name;
         }
         
-        std::string generate_kehu_code() const override;
+        virtual void accept(ast_visitor &visitor) const override;
+
 
         bool is_variable() const final override
         {
@@ -168,7 +174,8 @@ public:
                 : literal_node<char>(value)
         {}
 
-        std::string generate_kehu_code() const override;
+        virtual void accept(ast_visitor &visitor) const override;
+
 };
 
 template class literal_node<std::string>;
@@ -179,7 +186,8 @@ public:
                 : literal_node<std::string>(value)
         {}
 
-        std::string generate_kehu_code() const override;
+        virtual void accept(ast_visitor &visitor) const override;
+
 };
 
 template class literal_node<signed long>;
@@ -190,7 +198,8 @@ public:
                 : literal_node<signed long>(value)
         {}
 
-        std::string generate_kehu_code() const override;
+        virtual void accept(ast_visitor &visitor) const override;
+
 };
 
 class word_node : public tiled_element_node
@@ -211,7 +220,8 @@ public:
                 return true;
         }
 
-        std::string generate_kehu_code() const override;
+        virtual void accept(ast_visitor &visitor) const override;
+
 };
 
 struct statement_node : syntax_node
@@ -227,19 +237,11 @@ template <typename T>
 struct block_node : tiled_element_node
 {
         std::vector<std::shared_ptr<T>> statements;
-        std::string generate_kehu_code() const override;
 
         bool is_block() const final override
         {
                 return true;
         }
-
-private:
-        inline void __test_have_member()
-        {
-                // cppcheck-suppress unreadVariable
-                std::string (T::*__test)() const = T::generate_kehu_code;
-        };
 };
 
 struct tiled_statement_node;
@@ -247,6 +249,7 @@ template class block_node<tiled_statement_node>;
 
 struct tiled_block_node : block_node<tiled_statement_node>
 {
+        virtual void accept(ast_visitor &visitor) const override;
 };
 
 /**
@@ -270,7 +273,8 @@ public:
                 return lex;
         }
 
-        std::string generate_kehu_code() const override;
+        virtual void accept(ast_visitor &visitor) const override;
+
 };
 
 /**
@@ -294,7 +298,8 @@ public:
                 return expression;
         }
 
-        std::string generate_kehu_code() const override;
+        virtual void accept(ast_visitor &visitor) const override;
+
 };
 
 struct definition_node : syntax_node
@@ -330,7 +335,8 @@ public:
                 return variable;
         }
 
-        std::string generate_kehu_code() const override;
+        virtual void accept(ast_visitor &visitor) const override;
+
 
         bool is_variable_definition() const final override
         {
@@ -340,6 +346,7 @@ public:
 
 struct executable_block_node : block_node<executable_statement_node>
 {
+        virtual void accept(ast_visitor &visitor) const override;
 };
 
 template struct block_node<executable_statement_node>;
@@ -365,7 +372,8 @@ public:
                 return block;
         };
 
-        std::string generate_kehu_code() const override;
+        virtual void accept(ast_visitor &visitor) const override;
+
 
         bool is_function_definition() const final override
         {
@@ -399,22 +407,22 @@ public:
                 : function(function), args(args)
         {}
         
-        std::vector<std::shared_ptr<const tiled_element_node>> get_function()
+        std::vector<std::shared_ptr<const tiled_element_node>> get_function() const
         {
                 return function;
         }
 
-        std::vector<std::shared_ptr<const expression_node>> get_args()
+        std::vector<std::shared_ptr<const expression_node>> get_args() const
         {
                 return args;
         }
 
-        std::string generate_kehu_code() const override;
+        virtual void accept(ast_visitor &visitor) const override;
 };
 
 struct definition_block_node : block_node<definition_node>
 {
-
+        virtual void accept(ast_visitor &visitor) const override;
 };
 
 template class block_node<definition_node>;
@@ -425,6 +433,26 @@ struct compile_unit_node : definition_block_node
 
 std::shared_ptr<compile_unit_node> transform_ast(
                 std::shared_ptr<const tiled_block_node> root_node);
+
+class ast_visitor
+{
+public:
+        virtual void visit(const type_node &node) = 0;
+        virtual void visit(const variable_node &node) = 0;
+        virtual void visit(const char_literal_node &node) = 0;
+        virtual void visit(const string_literal_node &node) = 0;
+        virtual void visit(const integer_literal_node &node) = 0;
+        virtual void visit(const word_node &node) = 0;
+        virtual void visit(const tiled_block_node &node) = 0;
+        virtual void visit(const tiled_statement_node &node) = 0;
+        virtual void visit(const executable_statement_node &node) = 0;
+        virtual void visit(const variable_definition_node &node) = 0;
+        virtual void visit(const executable_block_node &node) = 0;
+        virtual void visit(const function_definition_node &node) = 0;
+        virtual void visit(const function_call_node &node) = 0;
+        virtual void visit(const definition_block_node &node) = 0;
+        virtual void visit(const compile_unit_node &node) = 0;
+};
 
 } // namespace kehu::ast
 
