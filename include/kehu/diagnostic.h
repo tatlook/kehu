@@ -61,6 +61,15 @@ struct location
          */
         int last_charc;
 
+        explicit location(int first_linec, int first_charc, int last_linec,
+                        int last_charc)
+                : first_linec(first_linec), first_charc(first_charc),
+                last_linec(last_linec), last_charc(last_charc)
+        {}
+
+        location() : location(somewhere)
+        {}
+
         /**
          * @brief Joins two locations
          * Returns a new location, which have two locations and the place between

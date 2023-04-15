@@ -28,20 +28,38 @@ using llvm::LLVMContext;
 using llvm::Module;
 
 static Value *build_raw_number_ir(
-                std::shared_ptr<const ast::raw_integer_node> node,
+                std::shared_ptr<const ast::integer_literal_node> node,
                 IRBuilder<> &builder, LLVMContext &context)
 {
         llvm::ConstantFP *number = llvm::ConstantFP::get(context,
-                llvm::APFloat(static_cast<float>(node->value)));
+                llvm::APFloat(static_cast<float>(node->get_value())));
         return number;
 }
 
-static llvm::GlobalValue *build_variable_definition_ir(
+static void build_variable_definition_ir(
                 std::shared_ptr<const ast::definition_node> node,
                 IRBuilder<> &builder, LLVMContext &context, Module &module)
 {
-        llvm::GlobalVariable *var = nullptr;
-        return var;
+        llvm::GlobalVariable var(builder.getDoubleTy(), true,
+                        llvm::GlobalVariable::ExternalLinkage);
+        
+}
+
+static Value *build_expression(
+                std::shared_ptr<const ast::expression_node> exec,
+                IRBuilder<> &builder, LLVMContext &context, Module &module)
+{
+        return llvm::ConstantFP::get(context, llvm::APFloat(3.1415926));
+}
+
+static Value *build_executable_block(
+                std::shared_ptr<const ast::executable_block_node> exec,
+                IRBuilder<> &builder, LLVMContext &context, Module &module)
+{
+        if (exec->statements.size() == 0)
+                diagnostic::report("blank block", *exec);
+        return build_expression(exec->statements[0]->get_expression(),
+                        builder, context, module);
 }
 
 /**
@@ -54,7 +72,7 @@ static llvm::FunctionType *get_function_type(
                 IRBuilder<> &builder, LLVMContext &context, Module &module)
 {
         int argc = 0;
-        for (auto l : fdef->lex) {
+        for (auto l : fdef->get_lex()) {
                 if (l->is_variable()) {
                         ++argc;
                 }
@@ -71,14 +89,14 @@ static std::string generate_function_name(
                 std::shared_ptr<const ast::function_definition_node> fdef)
 {
         std::string name;
-        for (auto l : fdef->lex) {
+        for (auto l : fdef->get_lex()) {
                 name += l->generate_kehu_code();
                 name += " ";
         }
         return name;
 }
 
-static llvm::GlobalValue *build_function_definition_ir(
+static void build_function_definition_ir(
                 std::shared_ptr<const ast::definition_node> node,
                 IRBuilder<> &builder, LLVMContext &context, Module &module)
 {
@@ -93,10 +111,16 @@ static llvm::GlobalValue *build_function_definition_ir(
         llvm::Function *func = llvm::Function::Create(func_type, 
                         llvm::Function::ExternalLinkage,
                         generate_function_name(fdef), module);
-        return func;
+
+        llvm::BasicBlock *entry = llvm::BasicBlock::Create(context, "entry", func);
+        builder.SetInsertPoint(entry);
+
+        Value *body = build_executable_block(fdef->get_block(),
+                        builder, context, module);
+        builder.CreateRet(body);
 }
 
-static llvm::GlobalValue *build_definition_ir(
+static void build_definition_ir(
                 std::shared_ptr<const ast::definition_node> node,
                 IRBuilder<> &builder, LLVMContext &context, Module &module)
 {

@@ -37,24 +37,24 @@ std::string type_node::generate_kehu_code() const
         return name;
 }
 
-std::string variable_reference_node::generate_kehu_code() const
+std::string variable_node::generate_kehu_code() const
 {
         return name;
 }
 
-std::string raw_char_node::generate_kehu_code() const
+std::string char_literal_node::generate_kehu_code() const
 {
-        return std::string("'") + value + '\'';
+        return std::string("'") + get_value() + '\'';
 }
 
-std::string raw_string_node::generate_kehu_code() const
+std::string string_literal_node::generate_kehu_code() const
 {
-        return '"' + value + '"';
+        return '"' + get_value() + '"';
 }
 
-std::string raw_integer_node::generate_kehu_code() const
+std::string integer_literal_node::generate_kehu_code() const
 {
-        return std::to_string(value);
+        return std::to_string(get_value());
 }
 
 std::string word_node::generate_kehu_code() const
@@ -75,6 +75,11 @@ std::string block_node<T>::generate_kehu_code() const
         return code;
 }
 
+std::string executable_statement_node::generate_kehu_code() const
+{
+        return expression->generate_kehu_code() + ".";
+}
+
 std::string variable_definition_node::generate_kehu_code() const
 {
         std::string code;
@@ -83,11 +88,6 @@ std::string variable_definition_node::generate_kehu_code() const
         code += variable->generate_kehu_code();
         code += '.';
         return code;
-}
-
-std::string executable_block_node::generate_kehu_code() const
-{
-        return block_node<executable_statement_node>::generate_kehu_code();
 }
 
 std::string function_definition_node::generate_kehu_code() const
@@ -102,6 +102,16 @@ std::string function_definition_node::generate_kehu_code() const
         code += '\n';
         code += block->generate_kehu_code();
         code += '.';
+        return code;
+}
+
+std::string function_call_node::generate_kehu_code() const
+{
+        std::string code;
+        for (auto l : function) {
+                code += l->generate_kehu_code();
+                code += " ";
+        }
         return code;
 }
 

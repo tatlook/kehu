@@ -24,10 +24,10 @@ namespace kehu::ast
 static bool match_firsts_of_lex(std::shared_ptr<const tiled_statement_node> node,
                 std::initializer_list<std::string> lex)
 {
-        if (node->lex.size() < lex.size())
+        if (node->get_lex().size() < lex.size())
                 return false;
         auto cmpl = lex.begin();
-        auto nodel = node->lex.begin();
+        auto nodel = node->get_lex().begin();
         while (cmpl != lex.end()) {
                 if ((*nodel)->generate_kehu_code() != *cmpl)
                         return false;
@@ -37,13 +37,38 @@ static bool match_firsts_of_lex(std::shared_ptr<const tiled_statement_node> node
         return true;
 }
 
+static std::shared_ptr<expression_node> transform_expression(
+                std::shared_ptr<const tiled_statement_node> node);
+
+static auto function_parameter_placeholder = std::make_shared<word_node>("#");
+
+static std::shared_ptr<expression_node> transform_function_call(
+                std::shared_ptr<const tiled_statement_node> node)
+{
+        std::vector<std::shared_ptr<const tiled_element_node>> funcd;
+        std::vector<std::shared_ptr<const expression_node>> args;
+        for (auto l : node->get_lex()) {
+                if (l->is_expression()) {
+                        args.push_back(std::dynamic_pointer_cast
+                                        <expression_node>(l));
+                }
+                funcd.push_back(function_parameter_placeholder);
+        }
+        auto func_call = std::make_shared<function_call_node>(funcd, args);
+        return func_call;
+}
+
+static std::shared_ptr<expression_node> transform_expression(
+                std::shared_ptr<const tiled_statement_node> node)
+{
+        return transform_function_call(node);
+}
+
 static std::shared_ptr<executable_statement_node> transform_executable_statement(
                 std::shared_ptr<const tiled_statement_node> node)
 {
-        auto st = std::make_shared<executable_statement_node>();
-
-        // TODO
-
+        auto st = std::make_shared<executable_statement_node>
+                        (transform_expression(node));
         return st;
 }
 
@@ -63,14 +88,14 @@ static std::shared_ptr<definition_node> transform_global_variable_definition(
 {
         if ( ! match_firsts_of_lex(node, { "define", "variable" }))
                 diagnostic::report("of piru", *node); // TODO
-        if (node->lex.size() < 4
-                        || ( ! node->lex[2]->is_type())
-                        || ( ! node->lex[3]->is_variable()))
+        if (node->get_lex().size() < 4
+                        || ( ! node->get_lex()[2]->is_type())
+                        || ( ! node->get_lex()[3]->is_variable()))
                 diagnostic::report("expected variable name", *node);
-        auto var = std::make_shared<variable_definition_node>();
-        var->type = std::static_pointer_cast<type_node>(node->lex[2]);
-        var->variable = std::static_pointer_cast
-                        <variable_reference_node>(node->lex[3]);
+        auto var = std::make_shared<variable_definition_node>(
+                        std::static_pointer_cast<type_node>(node->get_lex()[2]),
+                        std::static_pointer_cast<variable_node>(node->get_lex()[3])
+                        );
         return var;
 }
 
@@ -79,16 +104,24 @@ static std::shared_ptr<definition_node> transform_function_definition(
 {
         if ( ! match_firsts_of_lex(node, { "define", "function" }))
                 return transform_global_variable_definition(node);
-        auto fn = std::make_shared<function_definition_node>();
-        auto l = node->lex.begin();
+        auto l = node->get_lex().begin();
         l += 2;
-        for ( ; l != (node->lex.end() - 1); ++l) {
-                fn->lex.push_back(*l); // TODO: parameter and type not word
+        std::vector<std::shared_ptr<const tiled_element_node>> fnlex;
+        for ( ; l != (node->get_lex().end() - 1); ++l) {
+                if ((*l)->is_type()) {
+                        if ((l + 1) == node->get_lex().end()
+                                        || ! (l[1])->is_variable())
+                                diagnostic::report("Variable is expected", **l);
+                        fnlex.push_back(function_parameter_placeholder);
+                }
+                fnlex.push_back(*l);
         }
-        if ( ! node->lex.back()->is_block())
+        if ( ! node->get_lex().back()->is_block())
                 diagnostic::report("missing function body", *node);
-        fn->block = transform_executable_block(
-                std::static_pointer_cast<tiled_block_node>(node->lex.back()));
+        auto block = transform_executable_block(
+                        std::static_pointer_cast<tiled_block_node>
+                        (node->get_lex().back()));
+        auto fn = std::make_shared<function_definition_node>(fnlex, block);
         return fn;
 }
 

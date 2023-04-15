@@ -33,7 +33,7 @@ TEST(ParseTiled, ReadType)
         auto ast = read_type(t, tokens.end());
         ASSERT_EQ(typeid(*ast), typeid(type_node));
         auto string = std::static_pointer_cast<type_node>(ast);
-        ASSERT_EQ(string->name, "%type-name+yes");
+        ASSERT_EQ(string->get_name(), "%type-name+yes");
         ASSERT_EQ(string->generate_kehu_code(), "%type-name+yes");
 }
 
@@ -44,9 +44,9 @@ TEST(ParseTiled, ReadRawString)
         });
         auto t = tokens.begin();
         auto ast = read_raw_string(t, tokens.end());
-        ASSERT_EQ(typeid(*ast), typeid(raw_string_node));
-        auto string = std::static_pointer_cast<raw_string_node>(ast);
-        ASSERT_EQ(string->value, "yes");
+        ASSERT_EQ(typeid(*ast), typeid(string_literal_node));
+        auto string = std::static_pointer_cast<string_literal_node>(ast);
+        ASSERT_EQ(string->get_value(), "yes");
 }
 
 TEST(ParseTiled, ReadStatment)
@@ -56,9 +56,9 @@ TEST(ParseTiled, ReadStatment)
         });
         auto t = tokens.begin();
         auto statement = read_tiled_statement(t, tokens.end());
-        ASSERT_EQ(statement->lex.size(), 2);
-        ASSERT_EQ(typeid(*(statement->lex[0])), typeid(word_node));
-        ASSERT_EQ(typeid(*(statement->lex[1])), typeid(variable_reference_node));
+        ASSERT_EQ(statement->get_lex().size(), 2);
+        ASSERT_EQ(typeid(*(statement->get_lex()[0])), typeid(word_node));
+        ASSERT_EQ(typeid(*(statement->get_lex()[1])), typeid(variable_node));
 }
 
 TEST(ParseTiled, ReadBlock)

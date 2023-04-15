@@ -24,24 +24,9 @@ using namespace kehu::diagnostic;
 
 TEST(location, operator_equal)
 {
-        location loc1 = {
-                .first_linec = 2,
-                .first_charc = 2,
-                .last_linec = 2,
-                .last_charc = 2,
-        };
-        location loc2 = {
-                .first_linec = 2,
-                .first_charc = 2,
-                .last_linec = 3,
-                .last_charc = 2,
-        };
-        location loc3 = {
-                .first_linec = 2,
-                .first_charc = 2,
-                .last_linec = 3,
-                .last_charc = 2,
-        };
+        location loc1 = location(2, 2, 2, 2);
+        location loc2 = location(2, 2, 3, 2);
+        location loc3 = location(2, 2, 3, 2);
         EXPECT_NE(loc1, loc2);
         EXPECT_EQ(loc2, loc3);
         EXPECT_EQ(loc1, location::somewhere);
@@ -50,80 +35,20 @@ TEST(location, operator_equal)
 
 TEST(location, operator_plus)
 {
-        location loc1 = {
-                .first_linec = 2,
-                .first_charc = 2,
-                .last_linec = 2,
-                .last_charc = 2,
-        };
-        location loc2 = {
-                .first_linec = 2,
-                .first_charc = 2,
-                .last_linec = 3,
-                .last_charc = 2,
-        };
-        location expect = {
-                .first_linec = 2,
-                .first_charc = 2,
-                .last_linec = 3,
-                .last_charc = 2,
-        };
+        location loc1 = location(2, 2, 2, 2);
+        location loc2 = location(2, 2, 3, 2);
+        location expect = location(2, 2, 3, 2);
         EXPECT_EQ(expect, loc1 + loc2);
-        loc1 = {
-                .first_linec = 6,
-                .first_charc = 2,
-                .last_linec = 10,
-                .last_charc = 2,
-        };
-        loc2 = {
-                .first_linec = 2,
-                .first_charc = 2,
-                .last_linec = 3,
-                .last_charc = 2,
-        };
-        expect = {
-                .first_linec = 2,
-                .first_charc = 2,
-                .last_linec = 10,
-                .last_charc = 2,
-        };
+        loc1 = location(6, 2, 10, 2);
+        loc2 = location(2, 2, 3, 2);
+        expect = location(2, 2, 10, 2);
         EXPECT_EQ(expect, loc1 + loc2);
-        loc1 = {
-                .first_linec = 6,
-                .first_charc = 9,
-                .last_linec = 10,
-                .last_charc = 2,
-        };
-        loc2 = {
-                .first_linec = 2,
-                .first_charc = 2,
-                .last_linec = 3,
-                .last_charc = 2,
-        };
-        expect = {
-                .first_linec = 2,
-                .first_charc = 2,
-                .last_linec = 10,
-                .last_charc = 2,
-        };
+        loc1 = location(6, 9, 10, 2);
+        loc2 = location(2, 2, 3, 2);
+        expect = location(2, 2, 10, 2);
         EXPECT_EQ(expect, loc1 + loc2);
-        loc1 = {
-                .first_linec = 1,
-                .first_charc = 1,
-                .last_linec = 2,
-                .last_charc = 1,
-        };
-        loc2 = {
-                .first_linec = 5,
-                .first_charc = 2,
-                .last_linec = 8,
-                .last_charc = 2,
-        };
-        expect = {
-                .first_linec = 1,
-                .first_charc = 1,
-                .last_linec = 8,
-                .last_charc = 2,
-        };
+        loc1 = location(1, 1, 2, 1);
+        loc2 = location(5, 2, 8, 2);
+        expect = location(1, 1, 8, 2);
         EXPECT_EQ(expect, loc1 + loc2);
 }

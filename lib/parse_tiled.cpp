@@ -42,49 +42,48 @@ static bool is_variable(const Token &t)
         return false;
 }
 
-static std::shared_ptr<value_node> read_raw_char(vector<Token>::const_iterator &t,
+static std::shared_ptr<tiled_element_node> read_raw_char(vector<Token>::const_iterator &t,
                 const vector<Token>::const_iterator &end)
 {
         if (t->type != TOKEN_CHAR)
                 diagnostic::report("incomprehensible token", *t);
-        auto rawvalue = std::make_shared<raw_char_node>();
-        rawvalue->value = std::get<char>(t->value);
+        auto rawvalue = std::make_shared<char_literal_node>(
+                        std::get<char>(t->value));
         rawvalue->location = t->location;
         ++t;
         return rawvalue;
 }
 
-static std::shared_ptr<value_node> read_raw_string(vector<Token>::const_iterator &t,
+static std::shared_ptr<tiled_element_node> read_raw_string(vector<Token>::const_iterator &t,
                 const vector<Token>::const_iterator &end)
 {
         if (t->type != TOKEN_STRING)
                 throw read_raw_char(t, end);
-        auto rawvalue = std::make_shared<raw_string_node>();
-        rawvalue->value = std::get<std::string>(t->value);
+        auto rawvalue = std::make_shared<string_literal_node>(
+                        std::get<std::string>(t->value));
         rawvalue->location = t->location;
         ++t;
         return rawvalue;
 }
 
-static std::shared_ptr<value_node> read_raw_integer(vector<Token>::const_iterator &t,
+static std::shared_ptr<tiled_element_node> read_raw_integer(vector<Token>::const_iterator &t,
                 const vector<Token>::const_iterator &end)
 {
         if (t->type != TOKEN_INTEGER)
                 return read_raw_string(t, end);
-        auto rawvalue = std::make_shared<raw_integer_node>();
-        rawvalue->value = std::get<signed long>(t->value);
+        auto rawvalue = std::make_shared<integer_literal_node>(
+                        std::get<signed long>(t->value));
         rawvalue->location = t->location;
         ++t;
         return rawvalue;
 }
 
-static std::shared_ptr<value_node> read_word(vector<Token>::const_iterator &t,
+static std::shared_ptr<tiled_element_node> read_word(vector<Token>::const_iterator &t,
                 const vector<Token>::const_iterator &end)
 {
         if (t->type != TOKEN_IDENTIFIER)
                 return read_raw_integer(t, end);
-        auto word = std::make_shared<word_node>();
-        word->word = std::get<string>(t->value);
+        auto word = std::make_shared<word_node>(std::get<string>(t->value));
         word->location = t->location;
         ++t;
         return word;
@@ -102,25 +101,23 @@ static bool is_type(const Token &t)
         return false;
 }
 
-static std::shared_ptr<value_node> read_type(vector<Token>::const_iterator &t,
+static std::shared_ptr<tiled_element_node> read_type(vector<Token>::const_iterator &t,
                 const vector<Token>::const_iterator &end)
 {
         if ( ! is_type(*t))
                 return read_word(t, end);
-        auto type = std::make_shared<type_node>();
-        type->name = std::get<string>(t->value);
+        auto type = std::make_shared<type_node>(std::get<string>(t->value));
         type->location = t->location;
         ++t;
         return type;
 }
 
-static std::shared_ptr<value_node> read_variable(vector<Token>::const_iterator &t,
+static std::shared_ptr<tiled_element_node> read_variable(vector<Token>::const_iterator &t,
                 const vector<Token>::const_iterator &end)
 {
         if ( ! is_variable(*t))
                 return read_type(t, end);
-        auto var = std::make_shared<variable_reference_node>();
-        var->name = std::get<string>(t->value);
+        auto var = std::make_shared<variable_node>(std::get<string>(t->value));
         var->location = t->location;
         ++t;
         return var;
@@ -130,7 +127,7 @@ static std::shared_ptr<tiled_statement_node> read_tiled_statement(
                 vector<Token>::const_iterator &t,
                 const vector<Token>::const_iterator &end);
 
-static std::shared_ptr<value_node> read_tiled_block(vector<Token>::const_iterator &t,
+static std::shared_ptr<tiled_element_node> read_tiled_block(vector<Token>::const_iterator &t,
                 const vector<Token>::const_iterator &end)
 {
         if (*t != "{") 
@@ -158,16 +155,19 @@ static std::shared_ptr<tiled_statement_node> read_tiled_statement(
                 vector<Token>::const_iterator &t,
                 const vector<Token>::const_iterator &end)
 {
-        auto primeval = std::make_shared<tiled_statement_node>();
         location begin = t->location;
+        std::vector<std::shared_ptr<tiled_element_node>> lex;
         while (true) {
                 if (t == end)
                         diagnostic::report("unexpected ending", t[-1]);
                 if (*t == '.')
                         break;
                 auto value_node = read_tiled_block(t, end);
-                primeval->lex.push_back(value_node);
+                lex.push_back(value_node);
         }
+        auto primeval = std::make_shared<tiled_statement_node>(
+                lex
+        );
         primeval->location = t->location + begin;
         ++t;
         return primeval;

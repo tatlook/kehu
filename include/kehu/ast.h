@@ -67,7 +67,7 @@ struct syntax_node
         }
 };
 
-struct value_node : syntax_node
+struct tiled_element_node : syntax_node
 {
         virtual bool is_expression() const
         {
@@ -95,7 +95,7 @@ struct value_node : syntax_node
         }
 };
 
-struct expression_node : value_node
+struct expression_node : tiled_element_node
 {
         bool is_expression() const final override
         {
@@ -103,9 +103,19 @@ struct expression_node : value_node
         }
 };
 
-struct type_node : value_node
+class type_node : public expression_node
 {
-        std::string name;
+        const std::string name;
+public:
+        explicit type_node(const std::string &name)
+                : name(name)
+        {}
+
+        const std::string &get_name() const
+        {
+                return name;
+        }
+        
         std::string generate_kehu_code() const override;
 
         bool is_type() const final override
@@ -114,9 +124,19 @@ struct type_node : value_node
         }
 };
 
-struct variable_reference_node : expression_node
+class variable_node : public expression_node
 {
-        std::string name;
+        const std::string name;
+public:
+        explicit variable_node(const std::string &name)
+                : name(name)
+        {}
+
+        const std::string &get_name() const
+        {
+                return name;
+        }
+        
         std::string generate_kehu_code() const override;
 
         bool is_variable() const final override
@@ -125,33 +145,73 @@ struct variable_reference_node : expression_node
         }
 };
 
-struct raw_char_node : expression_node
+template <typename T_value>
+class literal_node : public expression_node
 {
-        char value;
+        const T_value value;
+public:
+        explicit literal_node(const T_value &value)
+                : value(value)
+        {}
+
+        const T_value &get_value() const
+        {
+                return value;
+        }
+};
+
+template class literal_node<char>;
+class char_literal_node : public literal_node<char>
+{
+public:
+        explicit char_literal_node(const char value)
+                : literal_node<char>(value)
+        {}
+
         std::string generate_kehu_code() const override;
 };
 
-struct raw_string_node : expression_node
+template class literal_node<std::string>;
+class string_literal_node : public literal_node<std::string>
 {
-        std::string value;
+public:
+        explicit string_literal_node(const std::string &value)
+                : literal_node<std::string>(value)
+        {}
+
         std::string generate_kehu_code() const override;
 };
 
-struct raw_integer_node : expression_node
+template class literal_node<signed long>;
+class integer_literal_node : public literal_node<signed long>
 {
-        signed long value;
+public:
+        explicit integer_literal_node(const signed long value)
+                : literal_node<signed long>(value)
+        {}
+
         std::string generate_kehu_code() const override;
 };
 
-struct word_node : value_node
+class word_node : public tiled_element_node
 {
-        std::string word;
-        std::string generate_kehu_code() const override;
+        const std::string word;
+public:
+        explicit word_node(const std::string &word)
+                : word(word)
+        {}
+
+        const std::string &get_name() const
+        {
+                return word;
+        }
 
         bool is_word() const final override
         {
                 return true;
         }
+
+        std::string generate_kehu_code() const override;
 };
 
 struct statement_node : syntax_node
@@ -164,7 +224,7 @@ struct statement_node : syntax_node
  * @tparam T a statement_node
  */
 template <typename T>
-struct block_node : value_node
+struct block_node : tiled_element_node
 {
         std::vector<std::shared_ptr<T>> statements;
         std::string generate_kehu_code() const override;
@@ -177,6 +237,7 @@ struct block_node : value_node
 private:
         inline void __test_have_member()
         {
+                // cppcheck-suppress unreadVariable
                 std::string (T::*__test)() const = T::generate_kehu_code;
         };
 };
@@ -195,9 +256,20 @@ struct tiled_block_node : block_node<tiled_statement_node>
  * int saatana
  * </pre>
  */
-struct tiled_statement_node : statement_node
+class tiled_statement_node : public statement_node
 {
-        std::vector<std::shared_ptr<value_node>> lex;
+        const std::vector<std::shared_ptr<tiled_element_node>> lex;
+public:
+        explicit tiled_statement_node(const std::vector
+                        <std::shared_ptr<tiled_element_node>> &lex)
+                : lex(lex)
+        {}
+
+        const std::vector<std::shared_ptr<tiled_element_node>> &get_lex() const
+        {
+                return lex;
+        }
+
         std::string generate_kehu_code() const override;
 };
 
@@ -208,8 +280,21 @@ struct tiled_statement_node : statement_node
  */
 std::shared_ptr<tiled_block_node> parse_primeval_ast(const std::vector<token::Token> &tokens);
 
-struct executable_statement_node : tiled_statement_node
+class executable_statement_node : public statement_node
 {
+        std::shared_ptr<expression_node> expression;
+public:
+        explicit executable_statement_node(std::shared_ptr<expression_node>
+                        expression)
+                : expression(expression)
+        {}
+
+        std::shared_ptr<const expression_node> get_expression() const
+        {
+                return expression;
+        }
+
+        std::string generate_kehu_code() const override;
 };
 
 struct definition_node : syntax_node
@@ -225,10 +310,26 @@ struct definition_node : syntax_node
         }
 };
 
-struct variable_definition_node : definition_node
+class variable_definition_node : public definition_node
 {
-        std::shared_ptr<type_node> type;
-        std::shared_ptr<variable_reference_node> variable;
+        std::shared_ptr<const type_node> type;
+        std::shared_ptr<const variable_node> variable;
+public:
+        variable_definition_node(std::shared_ptr<const type_node> type,
+                        std::shared_ptr<const variable_node> variable)
+                : type(type), variable(variable)
+        {}
+
+        std::shared_ptr<const type_node> get_type() const
+        {
+                return type;
+        }
+
+        std::shared_ptr<const variable_node> get_variable() const
+        {
+                return variable;
+        }
+
         std::string generate_kehu_code() const override;
 
         bool is_variable_definition() const final override
@@ -237,22 +338,78 @@ struct variable_definition_node : definition_node
         }
 };
 
-struct executable_block_node : virtual block_node<executable_statement_node>,
-                virtual expression_node
+struct executable_block_node : block_node<executable_statement_node>
 {
-        std::string generate_kehu_code() const override;
 };
 
-struct function_definition_node : definition_node
+template struct block_node<executable_statement_node>;
+
+class function_definition_node : public definition_node
 {
-        std::vector<std::shared_ptr<value_node>> lex;
-        std::shared_ptr<executable_block_node> block;
+        std::vector<std::shared_ptr<const tiled_element_node>> lex;
+        std::shared_ptr<const executable_block_node> block;
+public:
+        explicit function_definition_node(const std::vector
+                        <std::shared_ptr<const tiled_element_node>> &lex,
+                        std::shared_ptr<executable_block_node> block)
+                : lex(lex), block(block)
+        {}
+
+        std::vector<std::shared_ptr<const tiled_element_node>> get_lex() const
+        {
+                return lex;
+        }
+
+        std::shared_ptr<const executable_block_node> get_block() const
+        {
+                return block;
+        };
+
         std::string generate_kehu_code() const override;
 
         bool is_function_definition() const final override
         {
                 return true;
         }
+};
+
+/**
+ * @brief A function call
+ * Calls a function @link function @endlink.
+ * 
+ */
+class function_call_node : public expression_node
+{
+        /**
+         * @brief The function
+         * 
+         */
+        std::vector<std::shared_ptr<const tiled_element_node>> function;
+
+        /**
+         * @brief Arguments to the function.
+         * 
+         */
+        std::vector<std::shared_ptr<const expression_node>> args;
+public:
+        explicit function_call_node(const std::vector
+                        <std::shared_ptr<const tiled_element_node>> &function,
+                        const std::vector
+                        <std::shared_ptr<const expression_node>> &args)
+                : function(function), args(args)
+        {}
+        
+        std::vector<std::shared_ptr<const tiled_element_node>> get_function()
+        {
+                return function;
+        }
+
+        std::vector<std::shared_ptr<const expression_node>> get_args()
+        {
+                return args;
+        }
+
+        std::string generate_kehu_code() const override;
 };
 
 struct definition_block_node : block_node<definition_node>

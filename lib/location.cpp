@@ -25,13 +25,7 @@ namespace kehu::diagnostic
 {
 
 
-const location location::somewhere = {
-        .first_linec = -1,
-        .first_charc = -1,
-        .last_linec = -1,
-        .last_charc = -1,
-};
-
+const location location::somewhere(-1, -1, -1, -1);
 
 location location::operator+(const location &other) const
 {
