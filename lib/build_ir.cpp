@@ -28,39 +28,66 @@ using llvm::Value;
 using llvm::LLVMContext;
 using llvm::Module;
 
-static Value *build_raw_number_ir(
-                std::shared_ptr<const ast::integer_literal_node> node,
-                IRBuilder<> &builder, LLVMContext &context)
+using namespace kehu::ast;
+
+ir_build_visitor::ir_build_visitor()
+        : context(), module("kehu-default-module", context), builder(context)
+{}
+
+void ir_build_visitor::visit(const tiled_statement_node &node)
 {
-        llvm::ConstantFP *number = llvm::ConstantFP::get(context,
-                llvm::APFloat(static_cast<float>(node->get_value())));
-        return number;
+        diagnostic::report("internal error: we cannot use tiled", node);
 }
 
-static void build_variable_definition_ir(
-                std::shared_ptr<const ast::definition_node> node,
-                IRBuilder<> &builder, LLVMContext &context, Module &module)
+void ir_build_visitor::visit(const type_node &node)
+{
+        /// TODO: fill the stub
+}
+
+void ir_build_visitor::visit(const variable_node &node)
+{
+        /// TODO: fill the stub
+}
+
+void ir_build_visitor::visit(const char_literal_node &node)
+{
+        /// TODO: fill the stub
+}
+
+void ir_build_visitor::visit(const string_literal_node &node)
+{
+        /// TODO: fill the stub
+}
+
+void ir_build_visitor::visit(const integer_literal_node &node)
+{
+        /// TODO: fill the stub
+}
+
+void ir_build_visitor::visit(const word_node &node)
+{
+        /// TODO: fill the stub
+}
+
+void ir_build_visitor::visit(const ast::tiled_block_node &node)
+{
+        diagnostic::report("internal error: we cannot use tiled", node);
+}
+
+void ir_build_visitor::visit(const executable_statement_node &node)
+{
+        /// TODO: fill the stub
+}
+
+void ir_build_visitor::visit(const variable_definition_node &node)
 {
         llvm::GlobalVariable var(builder.getDoubleTy(), true,
                         llvm::GlobalVariable::ExternalLinkage);
-        
 }
 
-static Value *build_expression(
-                std::shared_ptr<const ast::expression_node> exec,
-                IRBuilder<> &builder, LLVMContext &context, Module &module)
+void ir_build_visitor::visit(const ast::executable_block_node &node)
 {
-        return llvm::ConstantFP::get(context, llvm::APFloat(3.1415926));
-}
-
-static Value *build_executable_block(
-                std::shared_ptr<const ast::executable_block_node> exec,
-                IRBuilder<> &builder, LLVMContext &context, Module &module)
-{
-        if (exec->statements.size() == 0)
-                diagnostic::report("blank block", *exec);
-        return build_expression(exec->statements[0]->get_expression(),
-                        builder, context, module);
+        /// TODO: fill the stub
 }
 
 /**
@@ -69,11 +96,11 @@ static Value *build_executable_block(
  * Make the function type:  double(double,double) etc.
  */
 static llvm::FunctionType *get_function_type(
-                std::shared_ptr<const ast::function_definition_node> fdef,
+                const ast::function_definition_node &fdef,
                 IRBuilder<> &builder, LLVMContext &context, Module &module)
 {
         int argc = 0;
-        for (auto l : fdef->get_lex()) {
+        for (auto l : fdef.get_lex()) {
                 if (l->is_variable()) {
                         ++argc;
                 }
@@ -87,71 +114,50 @@ static llvm::FunctionType *get_function_type(
 }
 
 static std::string generate_function_name(
-                std::shared_ptr<const ast::function_definition_node> fdef)
+                const ast::function_definition_node &fdef)
 {
         std::string name;
-        for (auto l : fdef->get_lex()) {
+        for (auto l : fdef.get_lex()) {
                 name += dump::dump(*l);
                 name += " ";
         }
         return name;
 }
 
-static void build_function_definition_ir(
-                std::shared_ptr<const ast::definition_node> node,
-                IRBuilder<> &builder, LLVMContext &context, Module &module)
+void ir_build_visitor::visit(const function_definition_node &node)
 {
-        if ( ! node->is_function_definition())
-                return build_variable_definition_ir(node, builder, context, module);
-        auto fdef = std::static_pointer_cast
-                        <const ast::function_definition_node>(node);
-
         llvm::FunctionType *func_type =
-                        get_function_type(fdef, builder, context, module);
+                        get_function_type(node, builder, context, module);
 
         llvm::Function *func = llvm::Function::Create(func_type, 
                         llvm::Function::ExternalLinkage,
-                        generate_function_name(fdef), module);
+                        generate_function_name(node), module);
 
         llvm::BasicBlock *entry = llvm::BasicBlock::Create(context, "entry", func);
         builder.SetInsertPoint(entry);
+        
+        /// TODO: body
 
-        Value *body = build_executable_block(fdef->get_block(),
-                        builder, context, module);
-        builder.CreateRet(body);
+        builder.CreateRet(llvm::ConstantFP::get(context, llvm::APFloat(0.0f)));
 }
 
-static void build_definition_ir(
-                std::shared_ptr<const ast::definition_node> node,
-                IRBuilder<> &builder, LLVMContext &context, Module &module)
+void ir_build_visitor::visit(const function_call_node &node)
 {
-        return build_function_definition_ir(node, builder, context, module);
+        /// TODO: fill the stub
 }
 
-static void build_compile_unit_ir(
-                std::shared_ptr<const ast::compile_unit_node> node,
-                IRBuilder<> &builder, LLVMContext &context, Module &module)
+void ir_build_visitor::visit(const ast::definition_block_node &node)
 {
-        for (auto definition : node->statements) {
-                build_definition_ir(definition, builder, context, module);
+        for (auto definition : node.statements) {
+                definition->accept(*this);
         }
 }
 
-std::shared_ptr<std::string> build_ir(
-                std::shared_ptr<const ast::compile_unit_node> node)
+void ir_build_visitor::visit(const ast::compile_unit_node &node)
 {
-        LLVMContext context;
-        Module module("kehu-default-module", context);
-        IRBuilder<> builder(context);
-
-        build_compile_unit_ir(node, builder, context, module);
-
-        auto ir = std::make_shared<std::string>();
-        llvm::raw_string_ostream out(*ir);
-        out << module;
-        out.flush();
-
-        return ir;
+        for (auto definition : node.statements) {
+                definition->accept(*this);
+        }
 }
 
 } // namespace kehu::ir

@@ -86,8 +86,8 @@ int main(int argc, char const *argv[])
                 auto ast2 = ast::transform_ast(ast);
                 
                 target << dump::dump(*ast2) << std::flush;
-                std::shared_ptr<string> ir = ir::build_ir(ast2);
-                target << *ir;
+                string ir = ir::build_ir(*ast2);
+                target << ir;
         } catch (diagnostic::diagnostic_message &e) {
                 std::cerr << e << std::endl;
                 return 1;

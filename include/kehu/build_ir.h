@@ -20,12 +20,54 @@
 #define _KEHU_BUILD_IR_H
 
 #include "ast.h"
+#include <llvm/IR/LLVMContext.h>
+#include <llvm/IR/Module.h>
+#include <llvm/IR/IRBuilder.h>
 
 namespace kehu::ir
 {
 
-std::shared_ptr<std::string> build_ir(
-                std::shared_ptr<const ast::compile_unit_node> node);
+class ir_build_visitor : public ast::ast_visitor
+{
+        llvm::LLVMContext context;
+        llvm::Module module;
+        llvm::IRBuilder<> builder;
+        std::string builded_ir;
+public:
+        ir_build_visitor();
+
+        const std::string &get_ir()
+        {
+                builded_ir.clear();
+                llvm::raw_string_ostream out(builded_ir);
+                out << module;
+                out.flush();
+                return builded_ir;
+        }
+
+        virtual void visit(const ast::type_node &node) override;
+        virtual void visit(const ast::variable_node &node) override;
+        virtual void visit(const ast::char_literal_node &node) override;
+        virtual void visit(const ast::string_literal_node &node) override;
+        virtual void visit(const ast::integer_literal_node &node) override;
+        virtual void visit(const ast::word_node &node) override;
+        virtual void visit(const ast::tiled_block_node &node) override;
+        virtual void visit(const ast::tiled_statement_node &node) override;
+        virtual void visit(const ast::executable_statement_node &node) override;
+        virtual void visit(const ast::variable_definition_node &node) override;
+        virtual void visit(const ast::executable_block_node &node) override;
+        virtual void visit(const ast::function_definition_node &node) override;
+        virtual void visit(const ast::function_call_node &node) override;
+        virtual void visit(const ast::definition_block_node &node) override;
+        virtual void visit(const ast::compile_unit_node &node) override;
+};
+
+inline std::string build_ir(const ast::syntax_node &node)
+{
+        ir_build_visitor irbv;
+        node.accept(irbv);
+        return irbv.get_ir();
+}
 
 } // namespace kehu::ir
 
