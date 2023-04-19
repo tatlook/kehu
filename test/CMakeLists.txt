@@ -32,7 +32,7 @@ gtest_discover_tests(kehu-test)
 target_link_libraries(
         kehu-test
         kehu-lib
-        GTest::gtest_main
+        GTest
 )
         
 target_include_directories(kehu-test PRIVATE ../include ../lib)

@@ -143,9 +143,9 @@ static std::shared_ptr<compile_unit_node> transform_compile_unit(
 }
 
 std::shared_ptr<compile_unit_node> transform_ast(
-                std::shared_ptr<const tiled_block_node> syntax_node)
+                std::shared_ptr<const tiled_block_node> competed_node)
 {
-        return transform_compile_unit(syntax_node);
+        return transform_compile_unit(competed_node);
 }
 
 } // namespace kehu::ast

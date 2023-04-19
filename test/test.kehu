@@ -1,5 +1,6 @@
 define function
 eat $apples from 3 {
+        1.
 }.
 
 define function
@@ -8,14 +9,4 @@ eat $apples from $piece {
         print $apple to $stdout.
     }.
     return 0.
-}.
-
-define function
-main $args {
-    assign $mima to 1.
-    inline "$mima += 1".
-    set $mima to 4.
-    eat [ 1 2 3 $mimi ] from $nil
-    prin "great" to $stdout.
-    print $thing @where $thing "yes".
 }.
