@@ -25,6 +25,8 @@ add_library(
         diagnostic.cpp
         build_ir.cpp
         dump.cpp
+        types.cpp
+        scope.cpp
 )
 
 target_include_directories(kehu-lib PRIVATE ../include)
