@@ -27,7 +27,7 @@
 namespace kehu::ir
 {
 
-class ir_build_visitor : public ast::ast_visitor
+class ir_build_visitor : public ast::completed_visitor
 {
         llvm::LLVMContext context;
         llvm::Module module;

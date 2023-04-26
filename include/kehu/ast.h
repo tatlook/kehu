@@ -25,6 +25,7 @@
 #include <stdexcept>
 #include <memory>
 
+#include "tiled.h"
 #include "token.h"
 #include "diagnostic.h"
 
@@ -39,12 +40,9 @@ std::string dump(const T_node &node);
 namespace kehu::ast
 {
 
-class ast_visitor;
+class completed_ast_visitor;
 
-/**
- * @brief Base class of all ast nodes.
- */
-struct syntax_node
+struct competed_node
 {
         /**
          * @brief Where this sytax node is
@@ -52,52 +50,25 @@ struct syntax_node
          */
         diagnostic::location location;
 
-        virtual void accept(ast_visitor &visitor) const = 0;
+        virtual void accept(completed_ast_visitor &visitor) const = 0;
 
-        bool operator==(const syntax_node &other) const
+        bool operator==(const competed_node &other) const
         {
                 return typeid(this) == typeid(&other)
                         && dump::dump(*this) == dump::dump(other);
         }
 
-        bool operator!=(const syntax_node &other) const
+        bool operator!=(const competed_node &other) const
         {
                 return ! (*this == other);
         }
 
-        friend std::ostream &operator<<(std::ostream &out, const syntax_node &node)
+        friend std::ostream &operator<<(std::ostream &out, const competed_node &node)
         {
                 return out << dump::dump(node);
         }
 };
 
-struct tiled_element_node : syntax_node
-{
-        virtual bool is_expression() const
-        {
-                return false;
-        }
-
-        virtual bool is_word() const
-        {
-                return false;
-        }
-
-        virtual bool is_block() const
-        {
-                return false;
-        }
-
-        virtual bool is_variable() const
-        {
-                return false;
-        }
-
-        virtual bool is_type() const
-        {
-                return false;
-        }
-};
 
 struct expression_node : tiled_element_node
 {
@@ -107,7 +78,7 @@ struct expression_node : tiled_element_node
         }
 };
 
-class type_node : public expression_node
+class type_node : public tiled_element_node, public competed_node
 {
         const std::string name;
 public:
@@ -120,8 +91,7 @@ public:
                 return name;
         }
         
-        virtual void accept(ast_visitor &visitor) const override;
-
+        virtual void accept(tiled_ast_visitor &visitor) const override;
 
         bool is_type() const final override
         {
@@ -129,7 +99,7 @@ public:
         }
 };
 
-class variable_node : public expression_node
+class variable_node : public tiled_element_node
 {
         const std::string name;
 public:
@@ -142,7 +112,7 @@ public:
                 return name;
         }
         
-        virtual void accept(ast_visitor &visitor) const override;
+        virtual void accept(completed_ast_visitor &visitor) const override;
 
 
         bool is_variable() const final override
@@ -151,56 +121,6 @@ public:
         }
 };
 
-template <typename T_value>
-class literal_node : public expression_node
-{
-        const T_value value;
-public:
-        explicit literal_node(const T_value &value)
-                : value(value)
-        {}
-
-        const T_value &get_value() const
-        {
-                return value;
-        }
-};
-
-template class literal_node<char>;
-class char_literal_node : public literal_node<char>
-{
-public:
-        explicit char_literal_node(const char value)
-                : literal_node<char>(value)
-        {}
-
-        virtual void accept(ast_visitor &visitor) const override;
-
-};
-
-template class literal_node<std::string>;
-class string_literal_node : public literal_node<std::string>
-{
-public:
-        explicit string_literal_node(const std::string &value)
-                : literal_node<std::string>(value)
-        {}
-
-        virtual void accept(ast_visitor &visitor) const override;
-
-};
-
-template class literal_node<signed long>;
-class integer_literal_node : public literal_node<signed long>
-{
-public:
-        explicit integer_literal_node(const signed long value)
-                : literal_node<signed long>(value)
-        {}
-
-        virtual void accept(ast_visitor &visitor) const override;
-
-};
 
 class word_node : public tiled_element_node
 {
@@ -220,11 +140,11 @@ public:
                 return true;
         }
 
-        virtual void accept(ast_visitor &visitor) const override;
+        virtual void accept(completed_ast_visitor &visitor) const override;
 
 };
 
-struct statement_node : syntax_node
+struct statement_node : competed_node
 {
 };
 
@@ -233,8 +153,8 @@ struct statement_node : syntax_node
  * @brief 
  * @tparam T a statement_node
  */
-template <typename T>
-struct block_node : tiled_element_node
+template <typename T, typename T_super>
+struct block_node : T_super
 {
         std::vector<std::shared_ptr<T>> statements;
 
@@ -245,11 +165,11 @@ struct block_node : tiled_element_node
 };
 
 struct tiled_statement_node;
-template class block_node<tiled_statement_node>;
+template class block_node<tiled_statement_node, tiled_element_node>;
 
-struct tiled_block_node : block_node<tiled_statement_node>
+struct tiled_block_node : block_node<tiled_statement_node, tiled_element_node>
 {
-        virtual void accept(ast_visitor &visitor) const override;
+        virtual void accept(completed_ast_visitor &visitor) const override;
 };
 
 /**
@@ -259,7 +179,7 @@ struct tiled_block_node : block_node<tiled_statement_node>
  * int saatana
  * </pre>
  */
-class tiled_statement_node : public statement_node
+class tiled_statement_node : protected statement_node, public tiled_node
 {
         const std::vector<std::shared_ptr<tiled_element_node>> lex;
 public:
@@ -273,7 +193,7 @@ public:
                 return lex;
         }
 
-        virtual void accept(ast_visitor &visitor) const override;
+        virtual void accept(completed_ast_visitor &visitor) const override;
 
 };
 
@@ -298,11 +218,11 @@ public:
                 return expression;
         }
 
-        virtual void accept(ast_visitor &visitor) const override;
+        virtual void accept(completed_ast_visitor &visitor) const override;
 
 };
 
-struct definition_node : syntax_node
+struct definition_node : competed_node
 {
         virtual bool is_variable_definition() const
         {
@@ -335,7 +255,7 @@ public:
                 return variable;
         }
 
-        virtual void accept(ast_visitor &visitor) const override;
+        virtual void accept(completed_ast_visitor &visitor) const override;
 
 
         bool is_variable_definition() const final override
@@ -344,12 +264,13 @@ public:
         }
 };
 
-struct executable_block_node : block_node<executable_statement_node>
-{
-        virtual void accept(ast_visitor &visitor) const override;
-};
 
-template struct block_node<executable_statement_node>;
+template class block_node<executable_statement_node, expression_node>;
+struct executable_block_node : block_node<executable_statement_node,
+                expression_node>
+{
+        virtual void accept(completed_ast_visitor &visitor) const override;
+};
 
 class function_definition_node : public definition_node
 {
@@ -372,7 +293,7 @@ public:
                 return block;
         };
 
-        virtual void accept(ast_visitor &visitor) const override;
+        virtual void accept(completed_ast_visitor &visitor) const override;
 
 
         bool is_function_definition() const final override
@@ -417,12 +338,12 @@ public:
                 return args;
         }
 
-        virtual void accept(ast_visitor &visitor) const override;
+        virtual void accept(completed_ast_visitor &visitor) const override;
 };
 
 struct definition_block_node : block_node<definition_node>
 {
-        virtual void accept(ast_visitor &visitor) const override;
+        virtual void accept(completed_ast_visitor &visitor) const override;
 };
 
 template class block_node<definition_node>;
@@ -434,7 +355,7 @@ struct compile_unit_node : definition_block_node
 std::shared_ptr<compile_unit_node> transform_ast(
                 std::shared_ptr<const tiled_block_node> root_node);
 
-class ast_visitor
+class completed_ast_visitor
 {
 public:
         virtual void visit(const type_node &node) = 0;

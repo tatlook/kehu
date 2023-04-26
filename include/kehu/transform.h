@@ -1,4 +1,4 @@
-/* 
+/*
  * Kehu - a toe language
  * Copyright (C) 2023 Zhen You Zhe
  *
@@ -16,31 +16,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined(_KEHU_DUMP_H)
-#define _KEHU_DUMP_H
+#if !defined(_KEHU_TRANSFORM_H)
+#define _KEHU_TRANSFORM_H
 
-#include <string>
 #include "ast.h"
-#include "tiled.h"
 
-namespace kehu::dump
+namespace kehu::trans
 {
 
-/**
- * @brief Generates kehu code.
- * The code is not strictly human-readle.
- * 
- * @return string of a kehu code
- */
-class dumper : public ast::completed_ast_visitor, public ast::tiled_ast_visitor
+class transform_visitor : public ast::ast_visitor
 {
-        std::string code;
+        
 public:
-        const std::string &get_code() const
-        {
-                return code;
-        }
-
         virtual void visit(const ast::type_node &node) override;
         virtual void visit(const ast::variable_node &node) override;
         virtual void visit(const ast::char_literal_node &node) override;
@@ -58,15 +45,6 @@ public:
         virtual void visit(const ast::compile_unit_node &node) override;
 };
 
-template <typename T_node>
-inline std::string dump(const T_node &node)
-{
-        dumper du;
-        node.accept(du);
-        return du.get_code();
 }
 
-} // namespace kehu::dump
-
-
-#endif // _KEHU_DUMP_H
+#endif // _KEHU_TRANSFORM_H

@@ -136,8 +136,7 @@ void ir_build_visitor::visit(const function_definition_node &node)
         llvm::BasicBlock *entry = llvm::BasicBlock::Create(context, "entry", func);
         builder.SetInsertPoint(entry);
         
-        /// TODO: body
-
+        node.get_block()->accept(*this);
         builder.CreateRet(llvm::ConstantFP::get(context, llvm::APFloat(0.0f)));
 }
 
