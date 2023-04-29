@@ -16,6 +16,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+extern "C"
+{
+#include <lua.h>
+#include <lualib.h>
+#include <lauxlib.h>
+}
+
 #include <stdlib.h>
 #include <iostream>
 #include <fstream>
@@ -79,20 +86,16 @@ int main(int argc, char const *argv[])
         }
 
         try {
-                std::shared_ptr<ast::tiled_block_node> ast;
-                ast = ast::parse_primeval_ast(tokens);
+                std::shared_ptr<ast::tiled_block_node> ast
+                                = ast::parse_tiled_tree(tokens);
                 target << dump::dump(*ast) << std::flush;
-
-                auto ast2 = ast::transform_ast(ast);
-                
-                target << dump::dump(*ast2) << std::flush;
-                string ir = ir::build_ir(*ast2);
-                target << ir;
         } catch (diagnostic::diagnostic_message &e) {
                 std::cerr << e << std::endl;
                 return 1;
         }
         target.close();
+        lua_State *state = luaL_newstate();
+        
 
         return 0;
 }

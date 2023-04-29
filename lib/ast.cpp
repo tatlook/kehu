@@ -21,72 +21,47 @@
 namespace kehu::ast
 {
 
-void tiled_statement_node::accept(completed_ast_visitor &visitor) const
+void tiled_statement_node::accept(tiled_tree_visitor &visitor) const
 {
         visitor.visit(*this);
 }
 
-void type_node::accept(completed_ast_visitor &visitor) const
+void type_node::accept(tiled_tree_visitor &visitor) const
 {
         visitor.visit(*this);
 }
 
-void variable_node::accept(completed_ast_visitor &visitor) const
+void variable_node::accept(tiled_tree_visitor &visitor) const
 {
         visitor.visit(*this);
 }
 
-void char_literal_node::accept(completed_ast_visitor &visitor) const
+void char_literal_node::accept(tiled_tree_visitor &visitor) const
 {
         visitor.visit(*this);
 }
 
-void string_literal_node::accept(completed_ast_visitor &visitor) const
+void string_literal_node::accept(tiled_tree_visitor &visitor) const
 {
         visitor.visit(*this);
 }
 
-void integer_literal_node::accept(completed_ast_visitor &visitor) const
+void integer_literal_node::accept(tiled_tree_visitor &visitor) const
 {
         visitor.visit(*this);
 }
 
-void word_node::accept(completed_ast_visitor &visitor) const
+void word_node::accept(tiled_tree_visitor &visitor) const
 {
         visitor.visit(*this);
 }
 
-void tiled_block_node::accept(completed_ast_visitor &visitor) const
+void tiled_block_node::accept(tiled_tree_visitor &visitor) const
 {
         visitor.visit(*this);
 }
 
-void executable_statement_node::accept(completed_ast_visitor &visitor) const
-{
-        visitor.visit(*this);
-}
-
-void variable_definition_node::accept(completed_ast_visitor &visitor) const
-{
-        visitor.visit(*this);
-}
-
-void executable_block_node::accept(completed_ast_visitor &visitor) const
-{
-        visitor.visit(*this);
-}
-
-void function_definition_node::accept(completed_ast_visitor &visitor) const
-{
-        visitor.visit(*this);
-}
-
-void function_call_node::accept(completed_ast_visitor &visitor) const
-{
-        visitor.visit(*this);
-}
-
-void definition_block_node::accept(completed_ast_visitor &visitor) const
+void compile_unit_node::accept(tiled_tree_visitor &visitor) const
 {
         visitor.visit(*this);
 }

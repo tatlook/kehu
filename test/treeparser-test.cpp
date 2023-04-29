@@ -71,13 +71,13 @@ TEST(ParseTiled, ReadBlock)
         auto ast = read_tiled_block(t, tokens.end());
         ASSERT_EQ(typeid(*ast), typeid(tiled_block_node));
         auto block = std::static_pointer_cast<tiled_block_node>(ast);
-        ASSERT_EQ(block->statements.size(), 1);
+        ASSERT_EQ(block->get_statements().size(), 1);
         const vector<Token> statement_tokens = tokenize({
                 "yes."
         });
         t = statement_tokens.begin();
         auto statement = read_tiled_statement(t, tokens.end());
-        ASSERT_EQ(*block->statements[0], *statement);
+        ASSERT_EQ(*block->get_statements()[0], *statement);
 }
 
 TEST(ParseTiled, TreePa)
@@ -85,7 +85,7 @@ TEST(ParseTiled, TreePa)
         vector<Token> tokens = tokenize({
                 "@d v $2 k { }."
         });
-        auto ast = parse_primeval_ast(tokens);
+        auto ast = parse_tiled_tree(tokens);
         std::ofstream of;
         of.open("k.ll");
         of << dump::dump(*ast);

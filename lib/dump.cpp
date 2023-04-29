@@ -62,72 +62,20 @@ void dumper::visit(const word_node &node)
 {
         code += node.get_name();
 }
-
-template <typename T>
-static std::string visit_block(const block_node<T> &node, dumper &du)
+ 
+void dumper::visit(const ast::tiled_block_node &node)
 {
-        std::string code;
         code += "{\n";
-        for (const auto &st : node.statements) {
-                st->accept(du);
+        for (const auto &st : node.get_statements()) {
+                st->accept(*this);
                 code += '\n';
         }
         code += "}";
-        return code;
-}
-        
-void dumper::visit(const ast::tiled_block_node &node)
-{
-        code += visit_block(node, *this);
-}
-
-void dumper::visit(const executable_statement_node &node)
-{
-        node.get_expression()->accept(*this);
-        code += ".";
-}
-
-void dumper::visit(const variable_definition_node &node)
-{
-        code += "define variable\n";
-        node.get_type()->accept(*this);
-        node.get_variable()->accept(*this);
-        code += '.';
-}
-
-void dumper::visit(const ast::executable_block_node &node)
-{
-        code += visit_block(node, *this);
-}
-
-void dumper::visit(const function_definition_node &node)
-{
-        code += "define function\n";
-        for (const auto &l : node.get_lex()) {
-                l->accept(*this);
-                code += ' ';
-        }
-        code += '\n';
-        node.get_block()->accept(*this);
-        code += '.';
-}
-
-void dumper::visit(const function_call_node &node)
-{
-        for (auto l : node.get_function()) {
-                l->accept(*this);
-                code += " ";
-        }
-}
-
-void dumper::visit(const ast::definition_block_node &node)
-{
-        code += visit_block(node, *this);
 }
 
 void dumper::visit(const ast::compile_unit_node &node)
 {
-        for (const auto &st : node.statements) {
+        for (const auto &st : node.get_statements()) {
                 st->accept(*this);
                 code += '\n';
         }

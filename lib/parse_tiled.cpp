@@ -144,7 +144,7 @@ static std::shared_ptr<tiled_element_node> read_tiled_block(vector<Token>::const
                 }
                 if (*t == "}")
                         break;
-                block->statements.push_back(read_tiled_statement(t, end));
+                block->get_statements().push_back(read_tiled_statement(t, end));
         }
         block->location = t->location + begin;
         ++t;
@@ -178,12 +178,12 @@ static std::shared_ptr<tiled_block_node> read_root_block(vector<Token>::const_it
 {
         auto root = std::make_shared<tiled_block_node>();
         while (t != end) {
-                root->statements.push_back(read_tiled_statement(t, end));
+                root->get_statements().push_back(read_tiled_statement(t, end));
         }
         return root;
 }
 
-std::shared_ptr<tiled_block_node> parse_primeval_ast(
+std::shared_ptr<tiled_block_node> parse_tiled_tree(
                 const std::vector<token::Token> &tokens)
 {
         vector<Token>::const_iterator t = tokens.begin();

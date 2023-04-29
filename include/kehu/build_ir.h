@@ -27,7 +27,7 @@
 namespace kehu::ir
 {
 
-class ir_build_visitor : public ast::completed_visitor
+class ir_build_visitor : public ast::tiled_tree_visitor
 {
         llvm::LLVMContext context;
         llvm::Module module;
@@ -38,7 +38,8 @@ public:
 
         const std::string &get_ir()
         {
-                builded_ir.clear();
+                if (builded_ir != "")
+                        return builded_ir;
                 llvm::raw_string_ostream out(builded_ir);
                 out << module;
                 out.flush();
@@ -53,16 +54,10 @@ public:
         virtual void visit(const ast::word_node &node) override;
         virtual void visit(const ast::tiled_block_node &node) override;
         virtual void visit(const ast::tiled_statement_node &node) override;
-        virtual void visit(const ast::executable_statement_node &node) override;
-        virtual void visit(const ast::variable_definition_node &node) override;
-        virtual void visit(const ast::executable_block_node &node) override;
-        virtual void visit(const ast::function_definition_node &node) override;
-        virtual void visit(const ast::function_call_node &node) override;
-        virtual void visit(const ast::definition_block_node &node) override;
         virtual void visit(const ast::compile_unit_node &node) override;
 };
 
-inline std::string build_ir(const ast::syntax_node &node)
+inline std::string build_ir(const ast::tiled_node &node)
 {
         ir_build_visitor irbv;
         node.accept(irbv);

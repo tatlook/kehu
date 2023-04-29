@@ -21,7 +21,6 @@ add_library(
         tokenize.cpp
         ast.cpp
         parse_tiled.cpp
-        transform_ast.cpp
         diagnostic.cpp
         build_ir.cpp
         dump.cpp
@@ -37,5 +36,9 @@ llvm_map_components_to_libnames(llvm_libs core)
 
 message(STATUS "Found LLVM lib: ${llvm_libs}")
 
-# Link against LLVM libraries
-target_link_libraries(kehu-lib ${llvm_libs})
+target_link_directories(kehu-lib PRIVATE "../3rd/lua")
+
+target_link_libraries(kehu-lib 
+        ${llvm_libs} # Link against LLVM libraries
+        lua::lib)
+

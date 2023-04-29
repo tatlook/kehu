@@ -19,15 +19,47 @@
 #if !defined(_KEHU_TILED_H)
 #define _KEHU_TILED_H
 
+#include "diagnostic.h"
+
+namespace kehu::dump
+{
+
+template <typename T_node>
+std::string dump(const T_node &node);
+
+}
+
 namespace kehu::ast
 {
 
-class tiled_ast_visitor;
+class tiled_tree_visitor;
 
 class tiled_node
 {
 public:
-        virtual void accept(tiled_ast_visitor &visitor) const = 0;
+      /**
+         * @brief Where this sytax node is
+         * From first token to last token.
+         */
+        diagnostic::location location;
+
+        bool operator==(const tiled_node &other) const
+        {
+                return typeid(this) == typeid(&other)
+                        && dump::dump(*this) == dump::dump(other);
+        }
+
+        bool operator!=(const tiled_node &other) const
+        {
+                return ! (*this == other);
+        }
+
+        friend std::ostream &operator<<(std::ostream &out, const tiled_node &node)
+        {
+                return out << dump::dump(node);
+        }
+
+        virtual void accept(tiled_tree_visitor &visitor) const = 0;
 };
 
 
@@ -58,64 +90,6 @@ public:
         {
                 return false;
         }
-};
-
-
-template <typename T_value>
-class literal_node : public expression_node
-{
-        const T_value value;
-public:
-        explicit literal_node(const T_value &value)
-                : value(value)
-        {}
-
-        const T_value &get_value() const
-        {
-                return value;
-        }
-};
-
-template class literal_node<char>;
-class char_literal_node : public literal_node<char>
-{
-public:
-        explicit char_literal_node(const char value)
-                : literal_node<char>(value)
-        {}
-
-        virtual void accept(completed_ast_visitor &visitor) const override;
-
-};
-
-template class literal_node<std::string>;
-class string_literal_node : public literal_node<std::string>
-{
-public:
-        explicit string_literal_node(const std::string &value)
-                : literal_node<std::string>(value)
-        {}
-
-        virtual void accept(completed_ast_visitor &visitor) const override;
-
-};
-
-template class literal_node<signed long>;
-class integer_literal_node : public literal_node<signed long>
-{
-public:
-        explicit integer_literal_node(const signed long value)
-                : literal_node<signed long>(value)
-        {}
-
-        virtual void accept(completed_ast_visitor &visitor) const override;
-
-};
-
-class tiled_ast_visitor
-{
-public:
-
 };
 
 } // namespace kehu::ast
