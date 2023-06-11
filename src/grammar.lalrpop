@@ -1,0 +1,55 @@
+use std::str::FromStr;
+use crate::ast::{ Statement, StatementElement };
+
+
+grammar;
+
+Str: StatementElement = <s:r#"\"(\\.|[^"])*\""#>
+        => StatementElement::string(
+                String::from(&s[1 .. s.len() - 2])); // Toke out " and "
+
+Char: StatementElement = <s:r"'.'">
+        => StatementElement::char(s.chars().nth(1).unwrap());
+
+Integer: StatementElement = <s:r"[0-9]+"> 
+        => StatementElement::integer(i32::from_str(s).unwrap());
+
+Word: StatementElement = <s:r#"[a-zA-Z\-\+\=\*][a-zA-Z0-9\-\+\=\*]*"#>
+        => StatementElement::word(String::from(s));
+
+Variable: StatementElement = <s:r#"\$[a-zA-Z0-9\-\+\=\*]+"#>
+        => StatementElement::variable(String::from(s));
+
+Type: StatementElement = <s:r#"\%[a-zA-Z0-9\-\+\=\*]+"#>
+        => StatementElement::type_(String::from(s));
+
+Term: StatementElement = "(" <st:StElement+> ")"
+        => StatementElement::term(Statement::new(st));
+
+Block: StatementElement = {
+    "{" <Statement*> "}" => {
+        StatementElement::block(<>)
+    },
+}
+
+StElement: StatementElement = {
+    <Str> => <>,
+    <Char> => <>,
+    <Integer> => <>,
+    <Word> => <>,
+    <Variable> => <>,
+    <Type> => <>,
+    <Term> => <>,
+    <Block> => <>,
+}
+
+Statement: Statement = {
+    <st:StElement*> "." => {
+        Statement::new(st)
+    }
+}
+
+
+pub TileTree: StatementElement = {
+    <Block> => <>
+};

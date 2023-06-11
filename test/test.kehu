@@ -1,12 +1,35 @@
-define function
-eat $apples from 3 {
-        1.
+
+{
+
+interface %Cickable
+{
+    function (Cick $self $s %string).
+}
+
+class (Some of %T %Cickable)
+{
+    init
+    {
+        $self name = "__main__".
+
+    }.
+
+    function ($self fn $t %T) 
+    {
+        Set name of $t to "Zero".
+    }.
 }.
 
-define function
-eat $apples from $piece {
-    for $apple in $apples {
-        print $apple to $stdout.
-    }.
-    return 0.
+function (ki ki $x %int $y %string) %char
+{
+    print $x + $y.
+    return 'C'.
 }.
+
+entrance {
+    let $k = ki ki 12 "Hello World".
+    print $k.
+}.
+
+
+}
